@@ -15,8 +15,18 @@ function numero(id: number): string {
   return String(id).padStart(4, '0')
 }
 
+type Etat = 'a-commencer' | 'en-cours' | 'rendue'
+
+/** État de la relecture du relecteur connecté : l'autre relecteur de l'exercice n'y change rien (étape 3). */
+function etat(r: RelectureAssignee): Etat {
+  if (r.rendueAt !== null) return 'rendue'
+  return r.lien !== null ? 'en-cours' : 'a-commencer'
+}
+
 function statut(r: RelectureAssignee): string {
-  return r.statut === 'RELU' ? `Rendue · ${r.note} / 20` : libelleStatutRelecteur(r.statut)
+  const e = etat(r)
+  if (e === 'rendue') return `Rendue · ${r.note} / 20`
+  return libelleStatutRelecteur(e === 'en-cours' ? 'EN_COURS_DE_RELECTURE' : 'EN_ATTENTE_RELECTURE')
 }
 
 /** Spécification 08 (EF6) : relectures assignées, « Commencer la relecture », puis le formulaire. */
@@ -26,7 +36,7 @@ export default function RelecturesAssignees({ etudiantId }: Props) {
   const commencer = useAction(commencerRelecture)
 
   async function ouvrir(r: RelectureAssignee) {
-    const commencee = r.statut === 'EN_COURS_DE_RELECTURE' && r.lien ? r : await commencer.executer(r.id, etudiantId)
+    const commencee = etat(r) === 'en-cours' ? r : await commencer.executer(r.id, etudiantId)
     if (commencee) {
       setOuverte(commencee)
       relectures.recharger()
@@ -48,13 +58,13 @@ export default function RelecturesAssignees({ etudiantId }: Props) {
         {relectures.donnees?.map((r) => (
           <li key={r.id} className={ouverte?.id === r.id ? 'relecture active' : 'relecture'}>
             <div>
-              <strong>Exercice n° {numero(r.id)}</strong>
+              <strong>Exercice n° {numero(r.exerciceId)}</strong>
               <span className="chargement"> · {r.sessionTitre}</span>
             </div>
-            <span className={r.statut === 'RELU' ? 'statut-ferme' : 'statut-attente'}>{statut(r)}</span>
-            {r.statut === 'EN_ATTENTE_RELECTURE' || r.statut === 'EN_COURS_DE_RELECTURE' ? (
+            <span className={etat(r) === 'rendue' ? 'statut-ferme' : 'statut-attente'}>{statut(r)}</span>
+            {etat(r) !== 'rendue' ? (
               <button type="button" disabled={commencer.enCours} onClick={() => ouvrir(r)}>
-                {r.statut === 'EN_ATTENTE_RELECTURE' ? 'Commencer la relecture' : 'Reprendre la relecture'}
+                {etat(r) === 'a-commencer' ? 'Commencer la relecture' : 'Reprendre la relecture'}
               </button>
             ) : null}
           </li>
@@ -65,7 +75,7 @@ export default function RelecturesAssignees({ etudiantId }: Props) {
       {ouverte ? (
         <>
           <h2>
-            Exercice n° {numero(ouverte.id)} · {ouverte.sessionTitre}
+            Exercice n° {numero(ouverte.exerciceId)} · {ouverte.sessionTitre}
           </h2>
           <FormulaireRelecture key={ouverte.id} relecture={ouverte} etudiantId={etudiantId} onRendue={apresRendu} />
         </>

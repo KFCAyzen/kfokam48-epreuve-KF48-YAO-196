@@ -52,10 +52,13 @@ public class PresenceService {
 
 		// RG6 : un code d'une autre promotion est traité comme inconnu. Saisie en minuscules tolérée.
 		String code = requete.code().strip().toUpperCase(Locale.ROOT);
-		SessionCours session = sessions.findByCode(code)
+		Long sessionId = sessions.findByCode(code)
 			.filter(s -> s.getPromotion().getId().equals(etudiant.getPromotion().getId()))
+			.map(SessionCours::getId)
 			.orElseThrow(() -> new ErreurMetier(HttpStatus.BAD_REQUEST, "CODE_INCONNU",
 					"Code inconnu. Vérifiez le code affiché par votre formateur."));
+		// #56 : on attend la fin de toute autre présence ou dépôt de la session avant de vérifier puis d'écrire.
+		SessionCours session = sessions.verrouiller(sessionId).orElseThrow();
 
 		if (session.codeExpire(maintenant)) {
 			throw new ErreurMetier(HttpStatus.GONE, "CODE_EXPIRE",

@@ -33,7 +33,7 @@ import cm.kfokam48.presence.service.GenerateurCode;
 /**
  * Données de démonstration chargées au démarrage (ENF5), reprises des maquettes (docs/maquettes/README.md,
  * « Données de référence ») : promotion 2026-A, 12 étudiants, sessions S1 à S5 clôturées et S6 ouverte
- * au démarrage, pour que son code soit utilisable pendant 15 minutes. Profil « demo », actif par défaut,
+ * au démarrage, pour que son code soit utilisable pendant 15 minutes. Deux relecteurs par exercice (étape 3). Profil « demo », actif par défaut,
  * jamais pendant les tests. Idempotent : rien n'est inséré si une promotion existe déjà.
  */
 @Component
@@ -118,24 +118,28 @@ public class DonneesDemo implements ApplicationRunner {
 				}
 			}
 
-			// Chaque présent dépose ; son relecteur est le présent suivant, jamais lui-même (RG2, RG14).
+			// Chaque présent dépose ; ses deux relecteurs sont les deux présents suivants, jamais lui-même (RG2, RG13, RG14).
 			int deposes = derniere ? 3 : presents.size();
 			for (int i = 0; i < deposes; i++) {
 				Etudiant auteur = presents.get(i);
-				Etudiant relecteur = presents.get((i + 1) % presents.size());
 				Exercice exercice = exercices.save(new Exercice(session, auteur,
 						"https://github.com/kf48-demo/" + slug(auteur.getNom()) + "/s" + (s + 1),
 						ouverture.plus(Duration.ofMinutes(30 + i))));
-				Relecture relecture = relectures.save(new Relecture(exercice, relecteur, ouverture.plus(Duration.ofMinutes(31 + i))));
-				exercice.changerStatut(StatutExercice.EN_ATTENTE_RELECTURE);
-				// S5 garde deux relectures non rendues, S6 n'en a aucune de rendue : « relectures en attente » (Q11).
-				boolean enAttente = derniere || (s == SEANCES.size() - 2 && i >= deposes - 2);
-				if (!enAttente) {
-					int note = 10 + (noteSuivante * 7) % 10;
-					relecture.rendre(note, COMMENTAIRES.get(noteSuivante % COMMENTAIRES.size()),
-							ouverture.plus(Duration.ofHours(3)));
-					noteSuivante++;
+				// S5 : deux exercices n'ont qu'une relecture rendue, note provisoire (RG25) ; S6 : aucune rendue (Q11).
+				boolean provisoire = s == SEANCES.size() - 2 && i >= deposes - 2;
+				int rendues = derniere ? 0 : provisoire ? 1 : 2;
+				for (int k = 1; k <= 2; k++) {
+					Etudiant relecteur = presents.get((i + k) % presents.size());
+					Relecture relecture = relectures.save(new Relecture(exercice, relecteur, ouverture.plus(Duration.ofMinutes(31 + i))));
+					if (k <= rendues) {
+						int note = 10 + (noteSuivante * 7) % 10;
+						relecture.rendre(note, COMMENTAIRES.get(noteSuivante % COMMENTAIRES.size()),
+								ouverture.plus(Duration.ofHours(2 + k)));
+						noteSuivante++;
+					}
 				}
+				exercice.changerStatut(rendues == 2 ? StatutExercice.RELU
+						: rendues == 1 ? StatutExercice.EN_COURS_DE_RELECTURE : StatutExercice.EN_ATTENTE_RELECTURE);
 			}
 			if (!derniere) {
 				session.cloturer(ouverture.plus(Duration.ofHours(8)));

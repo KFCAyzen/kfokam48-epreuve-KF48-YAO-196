@@ -42,22 +42,30 @@ Chaque entrée répond aux trois mêmes questions :
 ## Étape 3 — Enveloppe
 
 **Fait :**
+- **Bug.** Issue #56 ouverte à 15:15, avant tout code. Le symptôme du client (deux présences simultanées, une seule enregistrée) venait de RG15 : les deux transactions assignaient le même exercice en attente, et la seconde violait la clé de `relecture`, ce qui annulait sa présence. Test `PresencesSimulteesTest` poussé **en échec** (`0d2ad9f`), puis correction par verrou de session (`e402316`, « Closes #56 »), et le test passe. Branche et PR dédiées (#57).
+- **Changement de besoin (deux relecteurs, note provisoire).** Analyse mise à jour avant le code (#58, PR #62) : cahier v2, D1 à D4 et contrat, dans des commits qui disent que c'est une conséquence du changement. Puis l'API (#59, PR #65), avec la **nouvelle migration V2** (V1 intacte) et un test qui prouve qu'une base remplie en V1 survit à V2. Puis les écrans (#60, PR #66).
+- **À ta demande, H2 retiré** (#63, PR #64) : les tests tournent maintenant sur PostgreSQL 16 par Testcontainers.
 
 **Bloqué :**
+- 15 min : une autre session travaillant dans le même dossier a changé de branche sous mes pieds, et trois commits d'analyse sont partis sur `docs/61`. Je les ai récupérés sur `docs/58` par un simple push, sans réécriture.
+- 10 min : le passage à PostgreSQL a fait échouer 18 tests. La cause n'était pas la base mais des classes recompilées par l'éditeur sans l'option `-parameters` ; un `mvnw clean` a suffi.
 
-**IA :**
+**IA :** Claude (Claude Code) a proposé la traduction du bug et écrit tests et code. Vérifié ainsi :
+- **bug :** le test a d'abord échoué avec l'erreur exacte attendue (violation de clé sur `relecture(exercice_id)`), et il passe après la correction ;
+- **migration :** testée sur une vraie base PostgreSQL, en migrant d'abord jusqu'à V1 seulement, puis vers V2 ;
+- **contrat :** un script compare les opérations imposées à l'original après chaque modification.
 
-**Ce que j'ai sorti du périmètre pour absorber le changement, et pourquoi :**
+**Ce que j'ai sorti du périmètre pour absorber le changement, et pourquoi :** la double relecture est un Must qui arrive tard et touche la base, le contrat et trois écrans. Pour la livrer testée avant 18h00, six stories quittent la v1.0 : #10 (blocage après 5 codes faux), #11 (présence ajoutée à la main), #12 (clôture), #13 (remplacement du lien), #15 (détail d'une session) et #16 (grille de présence). Aucune n'est nécessaire au changement, et chacune a un repli acceptable : le code expire en 15 minutes, le tableau montre les relectures en attente, le dépôt reste ouvert sans clôture. Chaque issue porte un commentaire qui le dit et le label « hors-périmètre ». À l'inverse, #14 (voir sa note) monte en Must : sans elle, l'étudiant ne verrait pas sa note provisoire.
 
 ---
 
 ## Étape 4 — Version finale
 
-**Fait :**
+**Fait :** CHANGELOG (analyse, v0.1, v1.0, avec les issues et PR de l’historique), README v1.0, backlog trié (seules restent ouvertes les six stories hors périmètre, sans jalon ; #61 fermée avec explication). README suivi depuis un clone vierge de `develop` : `docker compose up --build` construit et démarre les trois services ; la base déjà remplie en V1 a survécu à la migration V2 sur PostgreSQL. Commit `[JALON] v1.0`, publié sur `main`.
 
-**Bloqué :**
+**Bloqué :** 60 min : le disque plein a ralenti la construction des images Docker ; clone refait dans un chemin court (limite de 260 caractères de Windows) ; port 8080 déjà pris, test mené sur les ports de repli du README.
 
-**IA :**
+**IA :** Claude a rédigé le CHANGELOG et le README à partir de la liste réelle des PR fusionnées (`gh pr list`) ; vérifié en recoupant chaque numéro d’issue et de PR avec l’historique, et en suivant le README pas à pas sur un clone vierge.
 
 ---
 

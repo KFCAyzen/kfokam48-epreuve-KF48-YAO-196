@@ -28,13 +28,16 @@ public class ExerciceService {
 
 	private final EtudiantRepository etudiants;
 
+	private final AttributionService attribution;
+
 	private final Clock horloge;
 
 	public ExerciceService(ExerciceRepository exercices, SessionCoursRepository sessions, EtudiantRepository etudiants,
-			Clock horloge) {
+			AttributionService attribution, Clock horloge) {
 		this.exercices = exercices;
 		this.sessions = sessions;
 		this.etudiants = etudiants;
+		this.attribution = attribution;
 		this.horloge = horloge;
 	}
 
@@ -61,7 +64,9 @@ public class ExerciceService {
 			throw dejaDepose();
 		}
 		try {
-			return ExerciceDto.de(exercices.saveAndFlush(new Exercice(session, auteur, lien, horloge.instant())));
+			Exercice exercice = exercices.saveAndFlush(new Exercice(session, auteur, lien, horloge.instant()));
+			attribution.assigner(exercice);
+			return ExerciceDto.de(exercice);
 		}
 		catch (DataIntegrityViolationException e) {
 			throw dejaDepose();

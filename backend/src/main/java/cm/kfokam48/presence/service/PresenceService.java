@@ -31,13 +31,16 @@ public class PresenceService {
 
 	private final EtudiantRepository etudiants;
 
+	private final AttributionService attribution;
+
 	private final Clock horloge;
 
 	public PresenceService(PresenceRepository presences, SessionCoursRepository sessions,
-			EtudiantRepository etudiants, Clock horloge) {
+			EtudiantRepository etudiants, AttributionService attribution, Clock horloge) {
 		this.presences = presences;
 		this.sessions = sessions;
 		this.etudiants = etudiants;
+		this.attribution = attribution;
 		this.horloge = horloge;
 	}
 
@@ -66,6 +69,7 @@ public class PresenceService {
 		}
 		try {
 			Presence presence = presences.saveAndFlush(new Presence(session, etudiant, SourcePresence.ETUDIANT, maintenant));
+			attribution.assignerEnAttente(session.getId());
 			return PresenceDto.de(presence);
 		}
 		catch (DataIntegrityViolationException e) {

@@ -4,7 +4,7 @@ import ErreurInattendue from './components/ErreurInattendue'
 import { useIdentite } from './identite/contexte'
 import IdentiteProvider from './identite/IdentiteProvider'
 import Accueil from './pages/Accueil'
-import EtudiantPage from './pages/EtudiantPage'
+import EtudiantPage from './pages/etudiant/EtudiantPage'
 import FormateurPage from './pages/formateur/FormateurPage'
 import RelecteurPage from './pages/RelecteurPage'
 

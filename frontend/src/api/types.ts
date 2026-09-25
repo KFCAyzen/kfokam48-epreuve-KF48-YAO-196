@@ -28,3 +28,11 @@ export type SessionResume = SessionOuverte & {
   exercicesDeposes: number
   exercicesEnAttente: number
 }
+
+/** Réponse imposée de POST /api/presences. */
+export type Presence = {
+  id: number
+  sessionId: number
+  etudiantId: number
+  source: 'ETUDIANT' | 'FORMATEUR'
+}

@@ -1,0 +1,7 @@
+# Profil des tests (B6) : H2 en mémoire en mode PostgreSQL, pour tourner sur un poste vierge
+# sans base locale. Les mêmes migrations Flyway s'appliquent et Hibernate valide le schéma.
+spring:
+  datasource:
+    url: jdbc:h2:mem:presence-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""

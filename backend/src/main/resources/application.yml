@@ -5,10 +5,11 @@ spring:
     # Données de démonstration chargées au démarrage (ENF5) ; les tests activent le profil « test ».
     default: demo
   datasource:
-    # H2 en mémoire par défaut (lancement sans Docker) ; PostgreSQL via les variables de docker-compose.yml.
-    url: ${DB_URL:jdbc:h2:mem:presence;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1}
-    username: ${DB_USER:sa}
-    password: ${DB_PASSWORD:}
+    # Base de l'application : PostgreSQL. Dans docker-compose.yml, DB_URL pointe vers le service « db ».
+    # Valeurs par défaut = base locale de démonstration, ce ne sont pas des secrets.
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/presence}
+    username: ${DB_USER:presence}
+    password: ${DB_PASSWORD:presence}
   jpa:
     open-in-view: false
     hibernate:

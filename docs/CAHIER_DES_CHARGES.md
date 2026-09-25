@@ -1,7 +1,7 @@
 # Cahier des charges — Présence & relecture entre pairs KFOKAM48
 
 **Auteur :** KEPSEU Franck Celestin · KF48-YAO-196
-**Version :** 2 · **Date :** 25/09/2026
+**Version :** 2.1 · **Date :** 25/09/2026
 **Frontend choisi :** React, parce que trois écrans de formulaires et de tableaux n'ont besoin ni de rendu serveur (Next.js) ni d'un framework complet (Angular) : React avec Vite donne le code le plus court et un build statique simple à servir dans `docker compose`.
 
 ---
@@ -83,7 +83,7 @@ Le **système** intervient comme acteur secondaire : il génère le code, tire l
 | ENF3 | Volumétrie cible : jusqu'à 5 promotions de 60 étudiants, environ 3 sessions par semaine, pic de 60 marquages de présence dans les 2 minutes qui suivent l'affichage du code | Contraintes d'unicité en base sur `presence`, `exercice` et `session_cours.code` : aucun doublon possible même avec des requêtes simultanées ; la violation est traduite en `409` |
 | ENF4 | Toute erreur de l'API respecte le format `{ code, message }` : jamais de stack trace, de corps vide ni de page d'erreur par défaut de Spring | Tests d'intégration sur chaque code d'erreur, y compris route inconnue, JSON malformé et méthode non autorisée |
 | ENF5 | Un tiers démarre l'application depuis le seul `README`, avec des données de démonstration | Clone dans un dossier vide puis `docker compose up --build` : le front s'ouvre et le tableau de la promotion de démonstration n'est pas vide |
-| ENF6 | Les tests tournent sur un poste vierge, sans base de données locale | `./mvnw verify` sur H2 en mémoire, exécuté par la CI GitHub Actions à chaque pull request |
+| ENF6 | Les tests tournent sur un poste vierge, sans base de données installée localement | `./mvnw verify` démarre un PostgreSQL 16 jetable (Testcontainers) : Docker suffit ; exécuté par la CI GitHub Actions à chaque pull request |
 | ENF7 | Les dates échangées sont au format ISO-8601 en UTC et affichées à l'heure locale | Contrat `format: date-time` ; test d'intégration sur `ouvertureAt` et `expirationAt` |
 | ENF8 | L'interface et les messages d'erreur sont en français ; le front affiche le `message` renvoyé par l'API | Provoquer chaque erreur métier depuis les trois écrans et lire le message affiché |
 | ENF9 | Le relecteur reste anonyme pour l'auteur (RG20) | Test d'intégration : la réponse de `GET /api/etudiants/{id}/exercices` ne contient ni l'identifiant ni le nom du relecteur |
@@ -170,14 +170,14 @@ Le **système** intervient comme acteur secondaire : il génère le code, tire l
 | B3 | Séparation contrôleur / service / repository, aucune requête dans un contrôleur, aucune entité JPA exposée en JSON | Paquets `controller`, `service`, `repository`, `entity`, `dto` ; les contrôleurs ne manipulent que des DTO (records Java) |
 | B4 | Validation des entrées et gestion centralisée des erreurs (`@RestControllerAdvice`), jamais de stack trace | Bean Validation sur les DTO, un `@RestControllerAdvice` unique, et un contrôleur `/error` qui renvoie lui aussi `{ code, message }` |
 | B5 | Schéma versionné par Flyway ou Liquibase, `ddl-auto=update` interdit hors tests | Flyway, `ddl-auto=validate` partout |
-| B6 | Un test unitaire sur une règle métier réelle et un test d'intégration sur un endpoint, sur un poste vierge sans base locale | Tests unitaires sur RG1, RG2, RG7 et RG14 ; tests d'intégration MockMvc sur H2 en mémoire |
+| B6 | Un test unitaire sur une règle métier réelle et un test d'intégration sur un endpoint, sur un poste vierge sans base locale | Tests unitaires sur RG1, RG2, RG3, RG5, RG11, RG14, RG15 et RG19 ; tests d'intégration MockMvc sur PostgreSQL 16 démarré par Testcontainers, aucune base installée |
 | F1 | Framework déclaré et justifié en une ligne dans le README, build qui passe | React + Vite + TypeScript ; `npm run build` exécuté par la CI |
 | F2 | Trois écrans : formateur, étudiant, relecteur | Routes `/formateur`, `/etudiant`, `/relecteur` |
 | F3 | Appels API dans une couche dédiée, états de chargement et d'erreur gérés, aucune règle métier dupliquée | Dossier `src/api/`, seul à appeler `fetch` ; moyenne, statuts et contrôles lus depuis l'API |
 
 **Que je m'impose :**
-- **Base de données :** PostgreSQL 16, seule base de l'application, lancée par `docker compose`. H2 en mémoire, en mode PostgreSQL, sert uniquement aux tests, pour qu'ils tournent sur un poste vierge sans base locale (B6).
-- **Gestion des migrations :** Flyway, un fichier `V<n>__<description>.sql` par changement de schéma, jamais de modification d'une migration déjà poussée ; SQL compatible PostgreSQL et H2.
+- **Base de données :** PostgreSQL 16, seule base du projet : l'application la reçoit de `docker compose`, les tests d'un conteneur jetable démarré par Testcontainers. H2 a été retiré (#63) : les tests vérifient le comportement de la base de production, verrous compris (#56).
+- **Gestion des migrations :** Flyway, un fichier `V<n>__<description>.sql` par changement de schéma, jamais de modification d'une migration déjà poussée (V1 garde donc son commentaire d'origine, qui mentionne H2).
 - **Stratégie de tests :** tests unitaires JUnit sur les règles de gestion pures (heure injectée par une `Clock`, hasard par un `Random` à graine fixe) ; tests d'intégration `@SpringBootTest` + MockMvc sur chaque code HTTP du contrat ; chaque test cite la `RGx` qu'il prouve.
 - **Concurrence :** une présence ou un dépôt verrouille la ligne de sa session (`SELECT ... FOR UPDATE`) le temps de sa transaction, ce qui corrige le bug #56 ; les contraintes d'unicité restent le dernier rempart (ENF3).
 - **Démarrage :** `docker compose up --build` construit le backend et le front dans des conteneurs ; rien d'autre à installer que Docker.
@@ -229,5 +229,6 @@ Le **système** intervient comme acteur secondaire : il génère le code, tire l
 | Version | Quand | Ce qui a changé et pourquoi |
 |---|---|---|
 | 1 | 25/09/2026, étape 1 | Version initiale |
+| 2.1 | 25/09/2026, étape 3 | Une seule base : PostgreSQL. H2 retiré, les tests tournent sur PostgreSQL 16 par Testcontainers (#63) : section 8, B6, ENF6 |
 | 2 | 25/09/2026, étape 3 | **Conséquence du changement de besoin de l'enveloppe** : deux relecteurs par exercice. RG13 remplace Q6 ; RG14, RG15, RG16, RG18, RG19, RG20, RG23 adaptées ; RG25 (note retenue, provisoire) et RG26 (exercices déjà relus) ajoutées ; EF5, EF6, EF7 réécrites, EF12 promue Must ; section 7 : contradiction Q6 / enveloppe, décision « id partagé » remplacée, trois zones d'ombre et le bug #56 ; section 8 : verrou de session ; sections 3 et 10 : six stories sorties du périmètre de la v1.0 et pourquoi |
 | 1.1 | 25/09/2026, étape 2 | Précisions de l'examinateur : l'épreuve Git est supprimée, l'épreuve compte cinq étapes (section 10, second dépôt retiré de la section 9) ; l'enveloppe se demande au surveillant ; « issue » remplace « ticket ». Choix technique précisé : PostgreSQL est la seule base de l'application, H2 ne sert qu'aux tests (section 8) |

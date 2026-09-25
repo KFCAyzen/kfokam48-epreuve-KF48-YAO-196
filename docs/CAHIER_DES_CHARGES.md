@@ -117,3 +117,113 @@ Le formateur n'a pas de compte (Q1) : il n'est pas représenté en base, l'écra
 | RG21 | Dans le tableau : `presences` = nombre de sessions de la promotion où l'étudiant est présent, toutes sources confondues ; `exercicesDeposes` = nombre de ses exercices déposés ; `relecturesEnAttente` = nombre de relectures qui lui sont assignées et non rendues | Q11, Q16 |
 | RG22 | Le lien d'un exercice peut être remplacé par son auteur tant que le relecteur n'a pas commencé la relecture ; ensuite `409 RELECTURE_COMMENCEE` | Q13, Z7 |
 | RG23 | Un étudiant ne dépose un exercice que pour une session de sa propre promotion ; sinon `400 ETUDIANT_HORS_PROMOTION` | Z5 |
+
+## 7. Zones d'ombre, hypothèses et contradictions
+
+### 7.1 Contradictions relevées
+
+La contradiction franche est C1 : deux réponses du client s'excluent. C2 à C5 sont des tensions entre la demande, les réponses et le contrat imposé, qu'il faut aussi trancher.
+
+| Réf | Réponses en conflit | Ce que j'ai choisi | Pourquoi |
+|---|---|---|---|
+| **C1** | **Q10** « un relecteur peut corriger sa note tant que la session n'est pas clôturée » contre **Q15** « une fois validée, c'est fini, il ne peut plus y revenir » | **Q15 : une relecture rendue est définitive (RG17). Q10 est écartée** | 1) Le **contrat imposé** tranche déjà : `POST /api/relectures/{id}` prévoit `409 RELECTURE_DEJA_RENDUE`, donc un second envoi est un conflit et non une correction. Retenir Q10 obligerait à contourner une opération imposée. 2) Q15 est la réponse la plus explicite et le client la justifie (« plus honnête pour tout le monde »). 3) Une note corrigeable après coup affaiblit la relecture entre pairs, qui est le cœur du besoin. Conséquence : la clôture ne sert plus à figer les notes (RG20) |
+| C2 | **Q16** « sa présence *à chaque session* » contre le contrat imposé, où `presences` est un **entier** | Le contrat est respecté à la lettre : `GET /api/tableau` renvoie un nombre. Le détail session par session est une opération distincte, `GET /api/tableau/presences` (EF14, Could) | Le contrat est non négociable (B2). Le détail répond au besoin de Q16 sans modifier l'opération imposée |
+| C3 | La demande initiale (« présence et moyenne des notes par étudiant ») contre **Q16** (quatre indicateurs) | Q16 | Elle est plus précise, plus récente, et le contrat imposé reprend ses quatre indicateurs |
+| C4 | **Q13** « on peut remplacer le lien » contre le contrat : `POST /api/exercices` répond `409 EXERCICE_DEJA_DEPOSE` au second dépôt | Pas de vraie contradiction : le dépôt (`POST`) n'a lieu qu'une fois, le remplacement est une opération distincte `PUT /api/exercices/{id}` (EF11, RG22) | Le code `409` imposé interdit le double dépôt, pas la modification |
+| C5 | **Q3** « pas de présence après la fin de la session » contre **Q14** « le formateur ajoute une présence à la main » | Q3 s'applique à l'étudiant ; Q14 est l'exception du formateur, possible jusqu'à la clôture (RG7) | Le cas décrit en Q14 (un souci de téléphone) se règle justement après la fenêtre de 15 minutes |
+
+### 7.2 Zones d'ombre et hypothèses
+
+**Z1 est le trou que personne n'a vu** : le contrat imposé prévoit `403 AUTO_RELECTURE`, mais aucune opération ne dit **qui** appelle.
+
+| Réf | Point | Réponse client (Qx) ou hypothèse | Décision retenue | Conséquence |
+|---|---|---|---|---|
+| **Z1** | `POST /api/relectures/{id}` ne reçoit que `{ note, commentaire }` : l'API ne sait pas qui rend la relecture, donc elle ne peut pas détecter une auto-relecture | Aucune question ne le couvre. Q1 : pas de mot de passe, l'étudiant choisit son nom | L'appelant se désigne par l'en-tête **`X-Etudiant-Id`**, identité déclarative cohérente avec Q1. Le front l'envoie toujours. L'en-tête est **facultatif** : sans lui, la relecture est attribuée au relecteur assigné, pour qu'une requête conforme au seul corps imposé fonctionne | RG14, RG15 ; l'en-tête est ajouté au contrat |
+| Z2 | `POST /api/presences` reçoit un code, pas de session : comment retrouver la session, et que répondre si un code est réutilisé ou vient d'une autre promotion ? | Hypothèse | Le code est **unique pour toujours** (contrainte d'unicité en base) : un code expiré désigne encore sa session, on peut donc répondre `410` et non `400`. Le code d'une autre promotion est traité comme inconnu | RG3, RG4 |
+| Z3 | Q7 : relecteur tiré parmi les présents. Et si l'auteur est seul présent, ou si personne n'est présent au moment du dépôt ? | Hypothèse | L'exercice reste `DEPOSE` et reçoit un relecteur dès qu'un étudiant éligible devient présent | RG13, statut `DEPOSE` en D4 |
+| Z4 | « La fin de la session » (Q3, Q10, Q12) n'est jamais définie : aucune heure de fin n'est demandée | Hypothèse | Pas d'heure de fin. Pour l'étudiant, la fenêtre de présence est celle du code (15 min). La **clôture** est une action explicite du formateur (EF10) | Colonne `cloturee_at`, opération `POST /api/sessions/{id}/cloture` |
+| Z5 | Un étudiant absent peut-il déposer un exercice ? Q12 autorise le dépôt après la séance, Q7 réserve la relecture aux présents | Hypothèse | Oui : l'exercice est un travail, pas une présence. En revanche il ne sera relecteur d'aucun exercice de cette session. Il ne peut déposer que pour une session de sa promotion | RG23 |
+| Z6 | Le hasard pur peut confier 5 relectures au même étudiant et aucune à un autre | Q7 dit « au hasard », rien sur l'équité | Tirage au hasard **parmi les éligibles les moins chargés** dans la session : c'est toujours le système qui choisit, au hasard | RG12 |
+| Z7 | Q13 : « tant que personne n'a commencé à le relire ». Le début d'une relecture n'est pas observable | Hypothèse | Le relecteur clique « Commencer la relecture », ce qui lui révèle le lien et horodate `commencee_at`. Le lien n'est plus remplaçable ensuite | RG22, statut `EN_COURS_DE_RELECTURE` |
+| Z8 | Q4 : bloquer qui (l'étudiant ou le poste) ? Quelles erreurs comptent ? Avec quel code HTTP, absent du contrat ? | Q4 : 5 erreurs, 2 minutes | Par étudiant, seule identité connue (Q1). Seules les réponses `CODE_INCONNU` comptent, pas un code expiré ni une présence en double. Code **`429 TROP_DE_TENTATIVES`**, ajouté au contrat | RG5, table `blocage_code` |
+| Z9 | Qui crée les promotions et les étudiants ? | Aucune question | Hors périmètre : des données de démonstration les créent au démarrage | §3 Exclu |
+| Z10 | Le formateur a-t-il un compte ? | Q1 : pas de mot de passe | Aucun compte formateur : l'écran formateur est accessible sans identification. Risque accepté et documenté | §2 |
+| Z11 | Moyenne : arrondi ? valeur pour un étudiant sans note ? | Contrat : `moyenne` nullable | Arrondi à 2 décimales ; `null` s'il n'a reçu aucune note ; le front affiche « — » | RG18 |
+| Z12 | Une relecture peut-elle être rendue après la clôture ? | Q10 lie les corrections à la clôture, mais Q10 est écartée (C1) | Oui : sinon un exercice en attente le resterait pour toujours, ce que Q11 cherche justement à éviter | RG20 |
+| Z13 | `POST /api/sessions` avec une promotion inexistante : quel code ? Le contrat ne prévoit que `400` | Hypothèse | `400 PROMOTION_INCONNUE` : on reste dans les codes prévus pour l'opération imposée | Contrat |
+| Z14 | Quel identifiant dans `POST /api/relectures/{id}` ? Aucune opération imposée ne renvoie un identifiant de relecture | Q6 : un seul relecteur par exercice | Relation 1–1 : la relecture **partage l'identifiant de son exercice** (clé primaire `relecture.exercice_id`). L'`id` renvoyé par `POST /api/exercices` est donc utilisable tel quel | D2 |
+| Z15 | Le commentaire peut-il être vide ? | Le contrat le déclare obligatoire | Obligatoire, de 1 à 2000 caractères | RG16 |
+| Z16 | Qu'est-ce qu'un lien valide ? | Contrat : `format: uri` | URL absolue en `http(s)` de 500 caractères au plus ; son contenu n'est pas vérifié | RG9 |
+| Z17 | Fuseau horaire des dates | Hypothèse | Instants stockés et échangés en UTC (ISO-8601), affichés à l'heure locale | ENF7 |
+
+**Questions sans effet sur le produit :** Q10, écartée par C1. Q1 supprime l'authentification du périmètre plus qu'elle n'ajoute une fonctionnalité.
+
+## 8. Contraintes techniques
+
+**Imposées par le sujet :**
+
+| Réf | Contrainte | Comment je la respecte |
+|---|---|---|
+| B1 | Java 17+, Maven, wrapper `mvnw` commité | Java 21, Spring Boot 3, `mvnw` et `.mvn/wrapper` versionnés |
+| B2 | Contrat `api/contrat.yaml` respecté à la lettre | Chemins, verbes, codes et format d'erreur des 5 opérations imposées inchangés ; les ajouts sont marqués dans le fichier ; tests d'intégration sur les codes |
+| B3 | Couches contrôleur / service / repository, aucune entité JPA en JSON | Paquets `controller`, `service`, `repository`, `entity`, `dto` ; les contrôleurs ne manipulent que des DTO (records) |
+| B4 | Validation des entrées, erreurs centralisées, jamais de stack trace | Bean Validation sur les DTO, un `@RestControllerAdvice` unique, et un contrôleur `/error` qui renvoie aussi `{ code, message }` |
+| B5 | Schéma versionné, `ddl-auto=update` interdit | Flyway (`db/migration/V1__…`), `ddl-auto=validate` |
+| B6 | Un test unitaire sur une règle réelle et un test d'intégration sur un endpoint, sans base locale | Tests unitaires sur RG1, RG12, RG14 et RG5 ; tests d'intégration MockMvc sur H2 en mémoire |
+| F1 | Framework déclaré et justifié dans le README, build qui passe | React + Vite + TypeScript ; `npm run build` exécuté par la CI |
+| F2 | Trois écrans : formateur, étudiant, relecteur | Routes `/formateur`, `/etudiant`, `/relecteur` |
+| F3 | Appels API dans une couche dédiée, états de chargement et d'erreur, aucune règle métier dupliquée | Dossier `src/api/` seul à appeler `fetch` ; moyenne, statuts et contrôles lus depuis l'API |
+
+**Que je m'impose :**
+- **Base :** PostgreSQL 16 dans `docker compose` ; H2 en mémoire, en mode PostgreSQL, pour les tests et le lancement sans Docker. Les migrations sont écrites en SQL compatible avec les deux.
+- **Heure :** une `Clock` injectée, pour tester l'expiration du code sans attendre 15 minutes.
+- **Hasard :** le tirage du relecteur est isolé dans une classe pure, testable avec une graine fixe.
+- **Démarrage :** `docker compose up --build` construit le backend et le front dans des conteneurs ; rien d'autre à installer que Docker.
+- **CI :** GitHub Actions lance `./mvnw verify` et `npm run build` à chaque pull request, pour que `main` reste sain.
+- **Git :** une branche par ticket, une pull request par branche, fusion sans squash pour garder les commits atomiques, issues fermées par `Closes #n`.
+
+## 9. Livrables
+
+- Dépôt public `kfokam48-epreuve-KF48-YAO-196` :
+  - `docs/CAHIER_DES_CHARGES.md` (ce document, tenu à jour après l'étape 3) ;
+  - `docs/JOURNAL.md`, une entrée par étape ;
+  - `docs/diagrammes/` : D1 cas d'utilisation, D2 modèle de données, D3 séquence « marquer sa présence », D4 états d'un exercice (bonus), en Mermaid ;
+  - `api/contrat.yaml` : les 5 opérations imposées et les opérations ajoutées ;
+  - `backend/` : API Spring Boot, migrations Flyway, tests ;
+  - `frontend/` : application React, trois écrans ;
+  - `docker-compose.yml`, `README.md` (installation testée depuis un clone vierge), `CHANGELOG.md` ;
+  - backlog en issues priorisées, pull requests liées, trois commits `[JALON]`.
+- Dépôt public `kfokam48-gitlab-KF48-YAO-196` : l'épreuve Git de l'étape 5.
+- `SOUMISSION.md`, téléversé sur la plateforme avant 18h00.
+
+## 10. Démarche prévue
+
+| Étape | Créneau visé | Ce que je vise | Fin de l'étape |
+|---|---|---|---|
+| 1. Analyser | 10h15 – 11h45 | Ce cahier des charges, D1 à D4, backlog en issues, contrat complété et figé | Journal, puis `[JALON] analyse` poussé |
+| 2. Première version | 11h45 – 14h15 | Les stories **Must** uniquement : EF1 à EF7, plus le socle technique (démarrage, format d'erreur) | Journal, puis `[JALON] v0.1` poussé |
+| 3. Enveloppe | 14h15 – 15h45 | Issues ouvertes **avant** de coder, bug reproduit par un test, migration versionnée, contrat mis à jour, re-priorisation écrite, correctif et évolution sur deux branches séparées, cahier et diagrammes mis à jour | Journal |
+| 4. Version finale | 15h45 – 16h45 | Les Should restants, CHANGELOG, README testé depuis un clone vierge, backlog restant trié | Journal, puis `[JALON] v1.0` poussé |
+| 5. Épreuve Git | 16h45 – 17h15 | Les cinq situations de `git-lab.bundle`, dans un second dépôt | Journal |
+| 6. Soumettre | 17h15 – 17h30 | Hash relevés, liens vérifiés en navigation privée, `SOUMISSION.md` téléversé | 30 min de marge avant 18h00 |
+
+**Si je prends du retard :** je coupe d'abord le Could (EF14), puis les Should dans l'ordre EF13, EF12, EF11. Je ne coupe jamais les tests B6, le journal, le README ni la mise à jour de l'analyse après l'étape 3. Tout ticket coupé reste ouvert dans le backlog avec sa priorité.
+
+**Flux Git par ticket :** issue → branche `feat/<n>-<sujet>` (ou `fix/<n>-<sujet>`) → commits atomiques au format `type(portée): message` qui citent les `RGx` concernées → pull request « Closes #n » → CI verte → fusion dans `main`.
+
+**Definition of Done — un ticket est terminé quand :**
+- chaque critère d'acceptation de l'issue est vérifié, à la main ou par un test ;
+- les règles de gestion citées par l'issue sont couvertes par au moins un test ;
+- les opérations touchées respectent `api/contrat.yaml` : chemins, codes et format d'erreur ;
+- le backend compile, `./mvnw verify` passe et `npm run build` passe (CI verte) ;
+- aucun fichier généré et aucun secret n'est commité ;
+- la pull request est liée à l'issue et fusionnée dans `main`, et l'issue est fermée ;
+- le cahier des charges et les diagrammes sont à jour si le ticket en change le contenu.
+
+---
+
+## Journal des révisions
+
+| Version | Quand | Ce qui a changé et pourquoi |
+|---|---|---|
+| 1 | 25/09/2026, étape 1 | Version initiale |

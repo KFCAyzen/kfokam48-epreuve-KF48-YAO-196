@@ -1,8 +1,15 @@
+import AvecIdentite from '../identite/AvecIdentite'
+
+/** Écran étudiant (F2) : l'étudiant se désigne, puis marque sa présence et dépose son exercice. */
 export default function EtudiantPage() {
   return (
-    <section>
-      <h1>Étudiant</h1>
-      <p>Marquer sa présence et déposer son exercice.</p>
-    </section>
+    <AvecIdentite>
+      {(identite) => (
+        <>
+          <p className="surtitre">{identite.promotionNom}</p>
+          <h1>Bonjour {identite.nom}</h1>
+        </>
+      )}
+    </AvecIdentite>
   )
 }

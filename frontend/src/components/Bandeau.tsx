@@ -5,10 +5,12 @@ type Props = {
   qui?: string
   /** Contexte sous le nom (ex. la promotion). */
   contexte?: string
+  /** Si fourni, affiche « Changer d'identité » (écrans étudiant et relecteur). */
+  onChangerIdentite?: () => void
 }
 
 /** Bandeau commun aux trois écrans, repris du composant « Masthead » de la maquette. */
-export default function Bandeau({ qui, contexte }: Props) {
+export default function Bandeau({ qui, contexte, onChangerIdentite }: Props) {
   return (
     <header className="bandeau">
       <Link to="/" className="bandeau-marque">
@@ -20,12 +22,17 @@ export default function Bandeau({ qui, contexte }: Props) {
         <NavLink to="/etudiant">Étudiant</NavLink>
         <NavLink to="/relecteur">Relecteur</NavLink>
       </nav>
-      {qui && (
+      {qui ? (
         <div className="bandeau-qui">
           <strong>{qui}</strong>
-          {contexte && <span>{contexte}</span>}
+          {contexte ? <span>{contexte}</span> : null}
+          {onChangerIdentite ? (
+            <button type="button" className="lien" onClick={onChangerIdentite}>
+              Changer d'identité
+            </button>
+          ) : null}
         </div>
-      )}
+      ) : null}
     </header>
   )
 }

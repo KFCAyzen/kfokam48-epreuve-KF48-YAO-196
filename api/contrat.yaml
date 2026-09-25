@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Contrat imposé — Épreuve finale KFOKAM48
-  version: "1.1"
+  version: "1.2"
   description: |
     Les cinq opérations décrites ici doivent exister EXACTEMENT ainsi :
     mêmes chemins, mêmes verbes, mêmes codes de statut, même format d'erreur.
@@ -13,6 +13,13 @@ info:
     et format d'erreur. Chaque ajout est marqué « ajout » dans un commentaire,
     avec la règle de gestion (RGx) ou la question client (Qx) qui le justifie.
     Les références renvoient à docs/CAHIER_DES_CHARGES.md.
+
+    --- Étape 3 : chaque exercice est relu par deux pairs (enveloppe, RG13) ---
+    Une relecture a désormais son propre identifiant (il n'est plus celui de l'exercice) ;
+    la note retenue d'un exercice est la moyenne des notes rendues, marquée provisoire tant
+    qu'une seule est rendue (RG25). Champs ajoutés : RelectureAssignee.exerciceId,
+    RelectureRendue.exerciceId, ExerciceAuteur.noteProvisoire et commentaires, et
+    moyenneProvisoire dans GET /api/tableau. Aucun champ imposé n'est retiré ni renommé.
 
     Identité (Q1) : aucune authentification. L'étudiant se désigne en choisissant
     son nom dans une liste ; les opérations qui ont besoin de savoir qui appelle
@@ -130,8 +137,9 @@ paths:
     post:
       summary: Un relecteur rend sa note et son commentaire
       description: |
-        EF6. L'identifiant d'une relecture est celui de son exercice (relation 1-1, Q6) :
-        l'id renvoyé par POST /api/exercices s'utilise tel quel.
+        EF6. {id} est l'identifiant de la relecture, lu dans GET /api/etudiants/{id}/relectures.
+        Étape 3 : un exercice a deux relectures, chacune avec son propre id (RG13) ; l'exercice
+        passe RELU quand les deux sont rendues (RG25).
         Une relecture rendue est définitive (Q15 retenue contre Q10, RG18).
         Ajout : l'en-tête facultatif X-Etudiant-Id désigne l'appelant ; sans lui,
         la relecture est attribuée au relecteur assigné.
@@ -169,7 +177,9 @@ paths:
         EF7. Une ligne par étudiant de la promotion, triée par nom.
         presences = sessions où il est présent, toutes sources ; exercicesDeposes =
         exercices déposés ; relecturesEnAttente = relectures assignées non rendues
-        (RG22). moyenne = moyenne des notes reçues, 2 décimales, null sans note (RG19).
+        (RG22). moyenne = moyenne des notes retenues de ses exercices, 2 décimales, null sans
+        note (RG19, RG25). Ajout de l'étape 3 : moyenneProvisoire, vrai si l'une des notes
+        retenues ne vient que d'une des deux relectures.
       parameters:
         - name: promotionId
           in: query
@@ -193,6 +203,7 @@ paths:
                     exercicesDeposes: { type: integer }
                     moyenne: { type: number, nullable: true }
                     relecturesEnAttente: { type: integer }
+                    moyenneProvisoire: { type: boolean, description: "Ajout étape 3 : vrai si une note retenue est provisoire (RG25)" }
         "400": { $ref: "#/components/responses/Erreur" }   # ajout : CHAMP_MANQUANT, PARAMETRE_INVALIDE (promotionId absent ou non numérique)
         "404": { $ref: "#/components/responses/Erreur" }   # PROMOTION_INCONNUE
 
@@ -347,7 +358,9 @@ paths:
   /api/etudiants/{id}/relectures:
     get:
       summary: "Ajout — les relectures assignées à un étudiant (EF6, écran relecteur)"
-      description: Le lien n'est renvoyé qu'une fois la relecture commencée (RG23).
+      description: |
+        Le lien n'est renvoyé qu'une fois la relecture commencée (RG23). Étape 3 : chaque
+        élément est une relecture de l'étudiant, identifiée par son propre id.
       parameters:
         - $ref: "#/components/parameters/IdChemin"
       responses:
@@ -554,23 +567,33 @@ components:
 
     ExerciceAuteur:
       type: object
-      description: Vu par l'auteur. Aucune donnée sur le relecteur (RG20).
-      required: [id, sessionId, sessionTitre, lien, statut, note, commentaire]
+      description: |
+        Vu par l'auteur. Aucune donnée sur les relecteurs (RG20).
+        Étape 3 : note = note retenue (moyenne des notes rendues, RG25), décimale possible ;
+        noteProvisoire vrai tant qu'une seule des deux relectures est rendue ;
+        commentaires = commentaires des relectures rendues, sans leur auteur.
+      required: [id, sessionId, sessionTitre, lien, statut, note, noteProvisoire, commentaires]
       properties:
         id: { type: integer, format: int64 }
         sessionId: { type: integer, format: int64 }
         sessionTitre: { type: string }
         lien: { type: string, format: uri }
         statut: { $ref: "#/components/schemas/StatutExercice" }
-        note: { type: integer, nullable: true }
-        commentaire: { type: string, nullable: true }
+        note: { type: number, nullable: true }
+        noteProvisoire: { type: boolean }
+        commentaires:
+          type: array
+          items: { type: string }
 
     RelectureAssignee:
       type: object
-      description: Vue par le relecteur. id = id de l'exercice relu.
-      required: [id, sessionId, sessionTitre, statut, lien, note, commentaire, rendueAt]
+      description: |
+        Vue par le relecteur. id = identifiant de la relecture (étape 3 : il n'est plus celui de
+        l'exercice) ; exerciceId = l'exercice relu. statut = statut de l'exercice.
+      required: [id, exerciceId, sessionId, sessionTitre, statut, lien, note, commentaire, rendueAt]
       properties:
         id: { type: integer, format: int64 }
+        exerciceId: { type: integer, format: int64 }
         sessionId: { type: integer, format: int64 }
         sessionTitre: { type: string }
         statut: { $ref: "#/components/schemas/StatutExercice" }
@@ -581,9 +604,11 @@ components:
 
     RelectureRendue:
       type: object
-      required: [id, statut, note, commentaire, rendueAt]
+      description: statut = statut de l'exercice ; RELU quand ses deux relectures sont rendues (RG25).
+      required: [id, exerciceId, statut, note, commentaire, rendueAt]
       properties:
         id: { type: integer, format: int64 }
+        exerciceId: { type: integer, format: int64 }
         statut: { $ref: "#/components/schemas/StatutExercice" }
         note: { type: integer }
         commentaire: { type: string }

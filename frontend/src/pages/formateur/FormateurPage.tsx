@@ -5,6 +5,7 @@ import ChoixPromotion from '../../components/ChoixPromotion'
 import { Chargement, MessageErreur } from '../../components/Etat'
 import { useApi } from '../../hooks/useApi'
 import { useMemoire } from '../../hooks/useMemoire'
+import OngletsFormateur from './OngletsFormateur'
 import OuvrirSession from './OuvrirSession'
 import PanneauCode from './PanneauCode'
 import SessionsPrecedentes from './SessionsPrecedentes'
@@ -30,6 +31,7 @@ export default function FormateurPage() {
     <>
       <p className="surtitre">Sessions de cours</p>
       <h1>Ouvrir une session</h1>
+      <OngletsFormateur />
 
       <ChoixPromotion valeur={promotionId} onChange={changerDePromotion} />
 

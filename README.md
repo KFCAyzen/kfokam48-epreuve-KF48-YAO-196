@@ -34,9 +34,16 @@ API_PORT=18080 FRONT_PORT=13000 docker compose up --build
 
 ### Données de démonstration
 
-Chargées automatiquement au premier démarrage, si la base est vide :
+Chargées automatiquement au premier démarrage, si la base est vide. Elles reprennent les données de référence des maquettes (`docs/maquettes/README.md`) :
 
-- deux promotions, « KFOKAM48 Fullstack Java 2026 » (8 étudiants) et « KFOKAM48 Data et IA 2026 » (4 étudiants).
+- promotion **« 2026-A · Développement logiciel »** : 12 étudiants, six sessions ;
+  - S1 à S5, les jours précédents, clôturées, avec leurs présences (dont des ajouts du formateur), exercices et relectures notées ; deux relectures de S5 restent en attente ;
+  - S6, **ouverte au démarrage** : son code, affiché sur l'écran formateur, est valable 15 minutes pour essayer le marquage de présence ; trois exercices y attendent leur relecture ;
+- promotion « 2026-B · Data et IA » : 4 étudiants, aucune session.
+
+Pour essayer : écran **Formateur** → choisir la promotion 2026-A → le code de S6 et l'onglet « Tableau de la promotion » ; écran **Étudiant** → se désigner (par exemple « Tagne, Joël », absent de S6) → saisir le code ; écran **Relecteur** → « Djomo, Hervé » a une relecture à commencer.
+
+Après 15 minutes le code de S6 a expiré (`410 CODE_EXPIRE`) : ouvrez une nouvelle session depuis l'écran formateur, ou repartez de zéro avec `docker compose down -v` puis `docker compose up`.
 
 ## Tests
 

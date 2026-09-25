@@ -44,7 +44,8 @@ public class ExerciceService {
 	public ExerciceDto deposer(DeposerExerciceRequete requete) {
 		Etudiant auteur = etudiants.findById(requete.etudiantId())
 			.orElseThrow(() -> new ErreurMetier(HttpStatus.BAD_REQUEST, "ETUDIANT_INCONNU", "Cet étudiant n'existe pas."));
-		SessionCours session = sessions.findById(requete.sessionId())
+		// #56 : dépôts et présences d'une même session s'enregistrent l'un après l'autre.
+		SessionCours session = sessions.verrouiller(requete.sessionId())
 			.orElseThrow(() -> new ErreurMetier(HttpStatus.BAD_REQUEST, "SESSION_INCONNUE", "Cette session n'existe pas."));
 		if (!session.getPromotion().getId().equals(auteur.getPromotion().getId())) {
 			throw new ErreurMetier(HttpStatus.BAD_REQUEST, "ETUDIANT_HORS_PROMOTION",

@@ -25,16 +25,20 @@ public class RelectureService {
 
 	private final EtudiantRepository etudiants;
 
+	private final StatutExerciceService statuts;
+
 	private final Clock horloge;
 
-	public RelectureService(RelectureRepository relectures, EtudiantRepository etudiants, Clock horloge) {
+	public RelectureService(RelectureRepository relectures, EtudiantRepository etudiants,
+			StatutExerciceService statuts, Clock horloge) {
 		this.relectures = relectures;
 		this.etudiants = etudiants;
+		this.statuts = statuts;
 		this.horloge = horloge;
 	}
 
 	/**
-	 * Opération imposée. L'en-tête X-Etudiant-Id est facultatif (section 7 du cahier des charges) :
+	 * Opération imposée ; {id} est l'identifiant de la relecture (deux par exercice depuis l'étape 3). L'en-tête X-Etudiant-Id est facultatif (section 7 du cahier des charges) :
 	 * sans lui, la relecture est attribuée au relecteur assigné.
 	 */
 	public RelectureRendueDto rendre(Long id, Long appelantId, RendreRelectureRequete requete) {
@@ -46,6 +50,7 @@ public class RelectureService {
 			throw dejaRendue();
 		}
 		relecture.rendre(requete.note(), requete.commentaire().strip(), horloge.instant());
+		statuts.recalculer(relecture.getExercice());
 		return RelectureRendueDto.de(relecture);
 	}
 
@@ -57,6 +62,7 @@ public class RelectureService {
 			throw dejaRendue();
 		}
 		relecture.commencer(horloge.instant());
+		statuts.recalculer(relecture.getExercice());
 		return RelectureAssigneeDto.de(relecture);
 	}
 

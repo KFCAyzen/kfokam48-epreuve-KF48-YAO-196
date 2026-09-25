@@ -66,6 +66,8 @@ class RelectureControllerTest {
 
 	private Long id;
 
+	private Exercice exercice;
+
 	@BeforeEach
 	void exerciceAssigne() {
 		Promotion promo = promotions.save(new Promotion("Promo test EF6"));
@@ -73,7 +75,7 @@ class RelectureControllerTest {
 		relecteur = etudiants.save(new Etudiant("Nkoulou, Brice", promo));
 		autre = etudiants.save(new Etudiant("Tagne, Joël", promo));
 		SessionCours session = sessions.save(SessionCours.ouvrir("Conception d'API REST", promo, "REL234", Instant.now()));
-		Exercice exercice = exercices.save(new Exercice(session, auteur, LIEN, Instant.now()));
+		exercice = exercices.save(new Exercice(session, auteur, LIEN, Instant.now()));
 		exercice.changerStatut(StatutExercice.EN_ATTENTE_RELECTURE);
 		id = relectures.saveAndFlush(new Relecture(exercice, relecteur, Instant.now())).getId();
 	}
@@ -92,17 +94,30 @@ class RelectureControllerTest {
 	}
 
 	@Test
-	void relectureRendue200EtExerciceRelu() throws Exception {
+	void premiereRelectureRendue200ExerciceEncoreEnCoursRg25() throws Exception {
 		rendre(corps(14), relecteur.getId()).andExpect(status().isOk())
 			.andExpect(jsonPath("$.id").value(id))
-			.andExpect(jsonPath("$.statut").value("RELU"))
+			.andExpect(jsonPath("$.exerciceId").value(exercice.getId()))
+			.andExpect(jsonPath("$.statut").value("EN_COURS_DE_RELECTURE"))
 			.andExpect(jsonPath("$.note").value(14))
 			.andExpect(jsonPath("$.rendueAt").isNotEmpty());
 	}
 
 	@Test
+	void lesDeuxRelecturesRenduesPassentLExerciceReluRg25() throws Exception {
+		Long seconde = relectures.saveAndFlush(new Relecture(exercice, autre, Instant.now())).getId();
+		rendre(corps(14), relecteur.getId()).andExpect(status().isOk());
+
+		mvc.perform(post("/api/relectures/{id}", seconde).contentType(MediaType.APPLICATION_JSON)
+			.header("X-Etudiant-Id", autre.getId())
+			.content(corps(11)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.statut").value("RELU"));
+	}
+
+	@Test
 	void sansEnTeteLaRelectureEstAttribueeAuRelecteurAssigne() throws Exception {
-		rendre(corps(20), null).andExpect(status().isOk()).andExpect(jsonPath("$.statut").value("RELU"));
+		rendre(corps(20), null).andExpect(status().isOk()).andExpect(jsonPath("$.note").value(20));
 	}
 
 	@Test
@@ -156,6 +171,7 @@ class RelectureControllerTest {
 		mvc.perform(get("/api/etudiants/{id}/relectures", relecteur.getId()))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$[0].id").value(id))
+			.andExpect(jsonPath("$[0].exerciceId").value(exercice.getId()))
 			.andExpect(jsonPath("$[0].statut").value("EN_ATTENTE_RELECTURE"))
 			.andExpect(jsonPath("$[0].lien").isEmpty());
 

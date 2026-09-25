@@ -142,8 +142,9 @@ class PresencesSimulteesTest {
 		assertThat(erreurs).as("aucun des deux étudiants ne reçoit d'erreur").isEmpty();
 		assertThat(presences.etudiantsPresents(session.getId())).as("les deux présences sont enregistrées (RG4, EF1)")
 			.containsExactlyInAnyOrder(etudiantA.getId(), etudiantB.getId());
-		assertThat(relectures.findById(exerciceEnAttente.getId())).as("l'exercice en attente a reçu son relecteur (RG15)")
-			.isPresent();
+		assertThat(relectures.findByExerciceId(exerciceEnAttente.getId())).as("l'exercice en attente a reçu ses deux relecteurs (RG13, RG15)")
+			.extracting(r -> r.getRelecteur().getId())
+			.containsExactlyInAnyOrder(etudiantA.getId(), etudiantB.getId());
 	}
 
 	private Void marquer(Etudiant etudiant, CountDownLatch depart, List<Throwable> erreurs) throws InterruptedException {

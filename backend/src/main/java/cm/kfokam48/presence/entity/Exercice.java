@@ -45,6 +45,10 @@ public class Exercice {
 	@Column(name = "modifie_at")
 	private Instant modifieAt;
 
+	/** RG13 : deux relecteurs ; 1 pour un exercice relu avant la migration V2 (RG26). */
+	@Column(name = "relecteurs_requis", nullable = false)
+	private int relecteursRequis = 2;
+
 	protected Exercice() {
 	}
 
@@ -86,6 +90,10 @@ public class Exercice {
 
 	public Instant getModifieAt() {
 		return modifieAt;
+	}
+
+	public int getRelecteursRequis() {
+		return relecteursRequis;
 	}
 
 }

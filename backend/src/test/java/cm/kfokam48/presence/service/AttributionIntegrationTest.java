@@ -22,14 +22,13 @@ import com.jayway.jsonpath.JsonPath;
 
 import cm.kfokam48.presence.entity.Etudiant;
 import cm.kfokam48.presence.entity.Promotion;
-import cm.kfokam48.presence.entity.Relecture;
 import cm.kfokam48.presence.entity.SessionCours;
 import cm.kfokam48.presence.repository.EtudiantRepository;
 import cm.kfokam48.presence.repository.PromotionRepository;
 import cm.kfokam48.presence.repository.RelectureRepository;
 import cm.kfokam48.presence.repository.SessionCoursRepository;
 
-/** EF5 de bout en bout : dépôt, présence et tirage du relecteur (RG2, RG13, RG14, RG15). */
+/** EF5 de bout en bout : dépôt, présence et tirage des deux relecteurs (RG2, RG13, RG14, RG15). */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -89,8 +88,23 @@ class AttributionIntegrationTest {
 
 		long exerciceId = id(deposer(auteur).andExpect(jsonPath("$.statut").value("EN_ATTENTE_RELECTURE")));
 
-		Relecture relecture = relectures.findById(exerciceId).orElseThrow();
-		assertThat(relecture.getRelecteur().getId()).isEqualTo(pair.getId()).isNotEqualTo(auteur.getId());
+		assertThat(relectures.findByExerciceId(exerciceId)).as("un seul éligible : un relecteur en attendant le second")
+			.extracting(r -> r.getRelecteur().getId())
+			.containsExactly(pair.getId());
+	}
+
+	@Test
+	void deuxPairsPresentsDeviennentLesDeuxRelecteursRg13() throws Exception {
+		Etudiant second = etudiants.save(new Etudiant("Tagne, Joël", auteur.getPromotion()));
+		presence(auteur);
+		presence(pair);
+		presence(second);
+
+		long exerciceId = id(deposer(auteur).andExpect(jsonPath("$.statut").value("EN_ATTENTE_RELECTURE")));
+
+		assertThat(relectures.findByExerciceId(exerciceId)).extracting(r -> r.getRelecteur().getId())
+			.as("deux relecteurs différents, jamais l'auteur (RG2, RG13)")
+			.containsExactlyInAnyOrder(pair.getId(), second.getId());
 	}
 
 	@Test
@@ -99,7 +113,7 @@ class AttributionIntegrationTest {
 
 		long exerciceId = id(deposer(auteur).andExpect(jsonPath("$.statut").value("DEPOSE")));
 
-		assertThat(relectures.findById(exerciceId)).isEmpty();
+		assertThat(relectures.findByExerciceId(exerciceId)).isEmpty();
 	}
 
 	@Test
@@ -109,10 +123,9 @@ class AttributionIntegrationTest {
 
 		presence(pair);
 
-		assertThat(relectures.findById(exerciceId)).get()
-			.extracting(r -> r.getRelecteur().getId())
-			.isEqualTo(pair.getId());
-		assertThat(relectures.findById(exerciceId).orElseThrow().getExercice().getStatut().name())
+		assertThat(relectures.findByExerciceId(exerciceId)).extracting(r -> r.getRelecteur().getId())
+			.containsExactly(pair.getId());
+		assertThat(relectures.findByExerciceId(exerciceId).getFirst().getExercice().getStatut().name())
 			.isEqualTo("EN_ATTENTE_RELECTURE");
 	}
 
@@ -122,7 +135,7 @@ class AttributionIntegrationTest {
 
 		long exerciceId = id(deposer(auteur).andExpect(jsonPath("$.statut").value("EN_ATTENTE_RELECTURE")));
 
-		assertThat(relectures.findById(exerciceId).orElseThrow().getRelecteur().getId()).isEqualTo(pair.getId());
+		assertThat(relectures.findByExerciceId(exerciceId)).extracting(r -> r.getRelecteur().getId()).containsExactly(pair.getId());
 	}
 
 }

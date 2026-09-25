@@ -71,6 +71,10 @@ Chaque entrée répond aux trois mêmes questions :
 
 ## Étape 5 — Soumission
 
-**Fait :**
+**Fait :** v1.0 publiée sur `main` (PR #71), avec les trois jalons dans l'ordre : `[JALON] analyse`, `[JALON] v0.1`, `[JALON] v1.0`. Cette entrée est publiée avant de relever le hash déclaré sur la plateforme. Dépôt public vérifié sans être connecté. `SOUMISSION.md` rempli à partir du modèle ; la partie « Épreuve Git » est sans objet, l'examinateur ayant supprimé cette épreuve à midi. Délai prolongé d'une heure par l'examinateur.
 
 **Ce que je referais autrement avec une journée de plus :**
+- livrer les six stories sorties du périmètre, d'abord l'ajout manuel d'une présence (Q14) et la clôture de session ;
+- travailler dans un seul dossier par session et libérer de l'espace disque avant de commencer : une session parallèle et le disque plein m'ont coûté plus d'une heure ;
+- ajouter des tests de bout en bout du navigateur (Playwright) sur les trois écrans ;
+- nommer explicitement les paramètres des contrôleurs (`@PathVariable("id")`), pour ne plus dépendre de l'option `-parameters` du compilateur.

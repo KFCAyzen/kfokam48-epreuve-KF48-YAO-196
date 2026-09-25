@@ -1,0 +1,8 @@
+# Fins de ligne normalisées : le wrapper Maven et les scripts shell doivent
+# rester en LF pour s'exécuter dans les conteneurs Linux et chez le correcteur.
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.jar binary
+*.png binary
+*.ico binary

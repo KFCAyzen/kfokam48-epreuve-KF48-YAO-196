@@ -489,3 +489,36 @@ button.lien {
   color: var(--encre);
   border-bottom-color: var(--encre);
 }
+
+/* ---- Double relecture (étape 3) : note provisoire ---- */
+.provisoire {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ambre);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.liste-exercices {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.note-retenue strong {
+  font-family: var(--serif);
+  font-size: 32px;
+}
+
+blockquote {
+  margin: 8px 0 0;
+  font-family: var(--serif);
+  color: var(--gris);
+}
+
+blockquote cite {
+  display: block;
+  font-size: 13px;
+  font-style: normal;
+}

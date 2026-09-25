@@ -53,7 +53,10 @@ export default function TableauPromotion({ promotionId }: Props) {
                 {nombreSessions !== undefined ? ` / ${nombreSessions}` : ''}
               </td>
               <td className="nombre">{ligne.exercicesDeposes}</td>
-              <td className="nombre">{moyenne(ligne.moyenne)}</td>
+              <td className="nombre">
+                {moyenne(ligne.moyenne)}
+                {ligne.moyenneProvisoire ? <span className="provisoire"> provisoire</span> : null}
+              </td>
               <td className="nombre">
                 {ligne.relecturesEnAttente > 0 ? <strong className="statut-attente">{ligne.relecturesEnAttente}</strong> : 0}
               </td>
@@ -64,7 +67,7 @@ export default function TableauPromotion({ promotionId }: Props) {
       <div className="notes">
         <p>
           <sup>a</sup> Moyenne arithmétique des notes reçues sur les exercices relus, arrondie à deux décimales. « — » :
-          aucune note reçue.
+          aucune note reçue. « provisoire » : une des notes retenues ne vient encore que d'un des deux relecteurs.
         </p>
         <p>Présences toutes sources confondues, par l'étudiant ou ajoutées par le formateur.</p>
       </div>

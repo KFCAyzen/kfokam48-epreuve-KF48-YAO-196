@@ -10,13 +10,14 @@ import { libelleStatut } from '../../utils/statuts'
 type Props = {
   etudiantId: number
   promotionId: number
+  onDepose?: () => void
 }
 
 /**
  * Spécification 07, zone « Dépôt » (EF4) : une session non clôturée de sa promotion et le lien.
  * La forme du lien, l'unicité et la clôture sont vérifiées par l'API (RG10, RG11, RG12).
  */
-export default function DeposerExercice({ etudiantId, promotionId }: Props) {
+export default function DeposerExercice({ etudiantId, promotionId, onDepose }: Props) {
   const idSession = useId()
   const idLien = useId()
   const [sessionId, setSessionId] = useState<number | null>(null)
@@ -34,6 +35,7 @@ export default function DeposerExercice({ etudiantId, promotionId }: Props) {
     if (exercice) {
       setDepose(exercice)
       setLien('')
+      onDepose?.()
     }
   }
 

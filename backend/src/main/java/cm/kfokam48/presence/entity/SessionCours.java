@@ -70,6 +70,13 @@ public class SessionCours {
 		return clotureeAt != null;
 	}
 
+	/** RG21 : clôture définitive ; bloque ensuite présences, dépôts et remplacements de lien. */
+	public void cloturer(Instant maintenant) {
+		if (clotureeAt == null) {
+			clotureeAt = maintenant;
+		}
+	}
+
 	public Long getId() {
 		return id;
 	}

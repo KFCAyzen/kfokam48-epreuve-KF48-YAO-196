@@ -433,3 +433,36 @@ button.lien {
   min-height: 64px;
   border-bottom: 3px solid var(--encre);
 }
+
+/* ---- Relectures (spécification 08) ---- */
+.liste-relectures {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  border-top: 1px solid var(--trait);
+}
+
+.liste-relectures .relecture {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--trait);
+}
+
+.liste-relectures .relecture.active {
+  border-left: 3px solid var(--accent);
+  padding-left: 12px;
+}
+
+.liste-relectures button {
+  margin-top: 0;
+}
+
+.saisie-note {
+  max-width: 120px;
+  font-family: var(--mono);
+  font-size: 24px;
+}

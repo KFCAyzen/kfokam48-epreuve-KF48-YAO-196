@@ -6,7 +6,7 @@ import IdentiteProvider from './identite/IdentiteProvider'
 import Accueil from './pages/Accueil'
 import EtudiantPage from './pages/etudiant/EtudiantPage'
 import FormateurPage from './pages/formateur/FormateurPage'
-import RelecteurPage from './pages/RelecteurPage'
+import RelecteurPage from './pages/relecteur/RelecteurPage'
 
 /** Bandeau selon l'écran : « Formateur », ou l'étudiant désigné sur les écrans étudiant et relecteur. */
 function BandeauSelonEcran() {

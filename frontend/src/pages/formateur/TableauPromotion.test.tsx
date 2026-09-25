@@ -6,8 +6,8 @@ import TableauPromotion from './TableauPromotion'
 const SESSION = { titre: 'S', promotionId: 1, code: 'ABCDEF', ouvertureAt: '2026-09-25T10:15:00Z', expirationAt: '2026-09-25T10:30:00Z', clotureeAt: null, presents: 0, exercicesDeposes: 0, exercicesEnAttente: 0 }
 
 const LIGNES = [
-  { etudiantId: 1, nom: 'Mbarga, Aïcha', presences: 6, exercicesDeposes: 5, moyenne: 14.75, relecturesEnAttente: 2 },
-  { etudiantId: 2, nom: 'Tagne, Joël', presences: 1, exercicesDeposes: 1, moyenne: null, relecturesEnAttente: 0 },
+  { etudiantId: 1, nom: 'Mbarga, Aïcha', presences: 6, exercicesDeposes: 5, moyenne: 14.75, relecturesEnAttente: 2, moyenneProvisoire: true },
+  { etudiantId: 2, nom: 'Tagne, Joël', presences: 1, exercicesDeposes: 1, moyenne: null, relecturesEnAttente: 0, moyenneProvisoire: false },
 ]
 
 describe('TableauPromotion (spécification 03, EF7)', () => {
@@ -22,10 +22,12 @@ describe('TableauPromotion (spécification 03, EF7)', () => {
     expect(within(aicha).getByText('6 / 6')).toBeInTheDocument()
     expect(within(aicha).getByText('14,75')).toBeInTheDocument()
     expect(aicha).toHaveClass('a-signaler')
+    expect(within(aicha).getByText('provisoire')).toBeInTheDocument()
 
     const joel = screen.getByText('Tagne, Joël').closest('tr')!
     expect(within(joel).getByText('—')).toBeInTheDocument()
     expect(joel).not.toHaveClass('a-signaler')
+    expect(within(joel).queryByText('provisoire')).not.toBeInTheDocument()
   })
 
   it('n’affiche pas de ligne de total « Promotion » (spécification 03)', async () => {

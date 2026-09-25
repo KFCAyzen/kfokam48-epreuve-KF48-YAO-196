@@ -46,9 +46,10 @@ export type ExerciceDepose = {
   statut: StatutExercice
 }
 
-/** Schéma « RelectureAssignee » : vue du relecteur ; id = id de l'exercice relu. */
+/** Schéma « RelectureAssignee » : vue du relecteur ; id = id de la relecture (étape 3), exerciceId = exercice relu. */
 export type RelectureAssignee = {
   id: number
+  exerciceId: number
   sessionId: number
   sessionTitre: string
   statut: StatutExercice
@@ -62,6 +63,7 @@ export type RelectureAssignee = {
 /** Schéma « RelectureRendue » : réponse 200 de POST /api/relectures/{id}. */
 export type RelectureRendue = {
   id: number
+  exerciceId: number
   statut: StatutExercice
   note: number
   commentaire: string
@@ -77,4 +79,19 @@ export type LigneTableau = {
   /** Calculée par l'API ; null sans note reçue (RG19). */
   moyenne: number | null
   relecturesEnAttente: number
+  /** Ajout de l'étape 3 : vrai si une note retenue ne vient que d'une des deux relectures (RG25). */
+  moyenneProvisoire: boolean
+}
+
+/** Schéma « ExerciceAuteur » : l'exercice vu par son auteur, sans relecteur (RG20). */
+export type ExerciceAuteur = {
+  id: number
+  sessionId: number
+  sessionTitre: string
+  lien: string
+  statut: StatutExercice
+  /** Note retenue : moyenne des notes rendues (RG25), décimale possible. */
+  note: number | null
+  noteProvisoire: boolean
+  commentaires: string[]
 }

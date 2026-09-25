@@ -1,18 +1,20 @@
 import { useId, useState, type FormEvent } from 'react'
 import { ouvrirSession } from '../../api/sessions'
+import type { SessionOuverte } from '../../api/types'
 import { MessageErreur } from '../../components/Etat'
 import { useAction } from '../../hooks/useAction'
 
 type Props = {
   promotionId: number | null
-  onOuverte: () => void
+  onOuverte: (session: SessionOuverte) => void
 }
 
-/** Formulaire de la maquette 01 : titre de la séance puis « Ouvrir la session » (EF2). */
+/** Formulaire de la spécification 01 : titre de la séance puis « Ouvrir la session » (EF2). */
 export default function OuvrirSession({ promotionId, onOuverte }: Props) {
   const idTitre = useId()
   const [titre, setTitre] = useState('')
   const { executer, enCours, erreur } = useAction(ouvrirSession)
+  const complet = titre.trim() !== '' && promotionId !== null
 
   async function soumettre(evenement: FormEvent<HTMLFormElement>) {
     evenement.preventDefault()
@@ -20,7 +22,7 @@ export default function OuvrirSession({ promotionId, onOuverte }: Props) {
     const session = await executer(titre, promotionId)
     if (session) {
       setTitre('')
-      onOuverte()
+      onOuverte(session)
     }
   }
 
@@ -34,7 +36,7 @@ export default function OuvrirSession({ promotionId, onOuverte }: Props) {
         placeholder="Conception d'API REST — atelier contrat OpenAPI"
       />
       <MessageErreur erreur={erreur} />
-      <button type="submit" disabled={enCours || promotionId === null}>
+      <button type="submit" disabled={enCours || !complet}>
         {enCours ? 'Ouverture…' : 'Ouvrir la session'}
       </button>
       <div className="notes">

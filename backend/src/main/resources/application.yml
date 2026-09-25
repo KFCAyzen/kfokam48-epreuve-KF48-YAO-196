@@ -35,3 +35,10 @@ server:
     include-exception: false
     whitelabel:
       enabled: false
+
+# Documentation de l'API générée depuis le code (springdoc) : /swagger-ui.html et /v3/api-docs.
+# Le contrat imposé reste api/contrat.yaml, affiché par le service « contrat » de docker-compose.yml.
+springdoc:
+  swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alpha

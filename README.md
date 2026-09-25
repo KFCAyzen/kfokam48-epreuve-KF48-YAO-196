@@ -23,13 +23,15 @@ Au premier lancement, la construction des images prend quelques minutes. Ensuite
 |---|---|
 | http://localhost:3000 | L'application : écrans formateur, étudiant et relecteur |
 | http://localhost:8080/api/promotions | L'API, par exemple la liste des promotions |
+| http://localhost:8080/swagger-ui.html | Documentation Swagger **générée par l'API** : toutes les opérations réelles, essayables (aussi sur http://localhost:3000/swagger-ui.html) |
+| http://localhost:8090 | Swagger UI du **contrat imposé** `api/contrat.yaml`, qui fait foi (consultation) |
 
 Pour tout arrêter : `docker compose down`. Pour repartir d'une base vide : `docker compose down -v`.
 
 Si le port 8080 ou 3000 est déjà pris sur ton poste, choisis-en d'autres au lancement :
 
 ```bash
-API_PORT=18080 FRONT_PORT=13000 docker compose up --build
+API_PORT=18080 FRONT_PORT=13000 CONTRAT_PORT=18090 docker compose up --build
 ```
 
 ### Données de démonstration
@@ -82,7 +84,7 @@ npm test
 | `api/` | `contrat.yaml`, le contrat OpenAPI |
 | `backend/` | L'API Spring Boot : `controller`, `service`, `repository`, `entity`, `dto`, `exception` ; migrations dans `src/main/resources/db/migration` |
 | `frontend/` | L'application React ; tous les appels réseau sont dans `src/api/` |
-| `docker-compose.yml` | PostgreSQL, API et front |
+| `docker-compose.yml` | PostgreSQL, API, front et Swagger UI du contrat |
 
 ## Façon de travailler
 

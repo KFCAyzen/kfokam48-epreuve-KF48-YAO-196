@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: presence-relecture
+  profiles:
+    # Données de démonstration chargées au démarrage (ENF5) ; les tests activent le profil « test ».
+    default: demo
+  datasource:
+    # Base de l'application : PostgreSQL. Dans docker-compose.yml, DB_URL pointe vers le service « db ».
+    # Valeurs par défaut = base locale de démonstration, ce ne sont pas des secrets.
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/presence}
+    username: ${DB_USER:presence}
+    password: ${DB_PASSWORD:presence}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # B5 : le schéma vient uniquement de Flyway, Hibernate ne fait que vérifier.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
+
+server:
+  error:
+    # B4 : jamais de stack trace ni de détail technique renvoyé au client.
+    include-stacktrace: never
+    include-message: never
+    include-binding-errors: never
+    include-exception: false
+    whitelabel:
+      enabled: false

@@ -1,0 +1,41 @@
+# Démarrage complet en une commande (ENF5) : docker compose up --build
+# Front : http://localhost:3000 · API : http://localhost:8080
+# Ports déjà pris sur ton poste ? API_PORT=18080 FRONT_PORT=13000 docker compose up --build
+# Les identifiants PostgreSQL ci-dessous sont ceux d'une base locale de démonstration,
+# jamais exposée hors de Docker : ce ne sont pas des secrets.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: presence
+      POSTGRES_USER: presence
+      POSTGRES_PASSWORD: presence
+    volumes:
+      - donnees-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U presence -d presence"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/presence
+      DB_USER: presence
+      DB_PASSWORD: presence
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8080}:8080"
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "${FRONT_PORT:-3000}:80"
+
+volumes:
+  donnees-postgres:

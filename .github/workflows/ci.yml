@@ -43,5 +43,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: Lint
         run: npm run lint
+      - name: Tests (Vitest, sans navigateur ni backend)
+        run: npm test
       - name: Build (F1)
         run: npm run build

@@ -45,3 +45,25 @@ export type ExerciceDepose = {
   id: number
   statut: StatutExercice
 }
+
+/** Schéma « RelectureAssignee » : vue du relecteur ; id = id de l'exercice relu. */
+export type RelectureAssignee = {
+  id: number
+  sessionId: number
+  sessionTitre: string
+  statut: StatutExercice
+  /** null tant que la relecture n'est pas commencée (RG23). */
+  lien: string | null
+  note: number | null
+  commentaire: string | null
+  rendueAt: string | null
+}
+
+/** Schéma « RelectureRendue » : réponse 200 de POST /api/relectures/{id}. */
+export type RelectureRendue = {
+  id: number
+  statut: StatutExercice
+  note: number
+  commentaire: string
+  rendueAt: string
+}

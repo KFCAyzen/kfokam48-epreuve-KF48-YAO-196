@@ -57,6 +57,37 @@ public class Relecture {
 		this.assigneeAt = assigneeAt;
 	}
 
+	public boolean estCommencee() {
+		return commenceeAt != null;
+	}
+
+	/** RG18 : une relecture rendue est définitive. */
+	public boolean estRendue() {
+		return rendueAt != null;
+	}
+
+	/** Le relecteur commence : l'exercice passe EN_COURS_DE_RELECTURE et son lien n'est plus remplaçable (RG23). */
+	public void commencer(Instant maintenant) {
+		if (commenceeAt == null) {
+			commenceeAt = maintenant;
+			exercice.changerStatut(StatutExercice.EN_COURS_DE_RELECTURE);
+		}
+	}
+
+	/** Rend la note et le commentaire, une seule fois (RG18) : l'exercice passe RELU. */
+	public void rendre(int note, String commentaire, Instant maintenant) {
+		if (estRendue()) {
+			throw new IllegalStateException("Relecture déjà rendue");
+		}
+		this.note = note;
+		this.commentaire = commentaire;
+		this.rendueAt = maintenant;
+		if (commenceeAt == null) {
+			commenceeAt = maintenant;
+		}
+		exercice.changerStatut(StatutExercice.RELU);
+	}
+
 	public Long getId() {
 		return id;
 	}

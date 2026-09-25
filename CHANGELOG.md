@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables du projet, version par version. Chaque ligne renvoie à son issue et à la pull request qui l'a fusionnée dans `develop` ; chaque version est publiée sur `main` par une pull request `develop` → `main` et marquée par un commit `[JALON]`.
 
+## [1.1] — 25/09/2026 (après la v1.0)
+
+### Ajouté
+- Documentation Swagger de l'API (#75) : générée depuis le code par springdoc-openapi (`/swagger-ui.html`, `/v3/api-docs`, aussi servie par le front) et Swagger UI du contrat imposé `api/contrat.yaml` dans `docker compose` (port 8090).
+
 ## [1.0] — 25/09/2026 (étapes 3 et 4)
 
 Publiée par le commit `[JALON] v1.0`.

@@ -71,7 +71,7 @@ Chaque entrée répond aux trois mêmes questions :
 
 ## Étape 5 — Soumission
 
-**Fait :** v1.0 publiée sur `main` (PR #71), avec les trois jalons dans l'ordre : `[JALON] analyse`, `[JALON] v0.1`, `[JALON] v1.0`. Cette entrée est publiée avant de relever le hash déclaré sur la plateforme. Dépôt public vérifié sans être connecté. `SOUMISSION.md` rempli à partir du modèle ; la partie « Épreuve Git » est sans objet, l'examinateur ayant supprimé cette épreuve à midi. Délai prolongé d'une heure par l'examinateur.
+**Fait :** v1.0 publiée sur `main` (PR #71), avec les trois jalons dans l'ordre : `[JALON] analyse`, `[JALON] v0.1`, `[JALON] v1.0`. Cette entrée est publiée avant de relever le hash déclaré sur la plateforme. Dépôt public vérifié sans être connecté. `SOUMISSION.md` rempli à partir du modèle ; la partie « Épreuve Git » est sans objet, l'examinateur ayant supprimé cette épreuve à midi. Délai prolongé d'une heure par l'examinateur ; je l'ai mis à profit pour ajouter une documentation Swagger de l'API (#75) : générée par le backend (springdoc, vérifiée par un test sur les cinq opérations imposées) et Swagger UI du contrat dans `docker compose` (vérifié en le lançant). Le hash déclaré a été relevé après cette dernière publication.
 
 **Ce que je referais autrement avec une journée de plus :**
 - livrer les six stories sorties du périmètre, d'abord l'ajout manuel d'une présence (Q14) et la clôture de session ;

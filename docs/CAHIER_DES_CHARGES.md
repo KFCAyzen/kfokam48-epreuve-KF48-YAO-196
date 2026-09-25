@@ -1,7 +1,7 @@
 # Cahier des charges — Présence & relecture entre pairs KFOKAM48
 
 **Auteur :** KEPSEU Franck Celestin · KF48-YAO-196
-**Version :** 2.1 · **Date :** 25/09/2026
+**Version :** 2.2 · **Date :** 25/09/2026
 **Frontend choisi :** React, parce que trois écrans de formulaires et de tableaux n'ont besoin ni de rendu serveur (Next.js) ni d'un framework complet (Angular) : React avec Vite donne le code le plus court et un build statique simple à servir dans `docker compose`.
 
 ---
@@ -180,6 +180,7 @@ Le **système** intervient comme acteur secondaire : il génère le code, tire l
 - **Gestion des migrations :** Flyway, un fichier `V<n>__<description>.sql` par changement de schéma, jamais de modification d'une migration déjà poussée (V1 garde donc son commentaire d'origine, qui mentionne H2).
 - **Stratégie de tests :** tests unitaires JUnit sur les règles de gestion pures (heure injectée par une `Clock`, hasard par un `Random` à graine fixe) ; tests d'intégration `@SpringBootTest` + MockMvc sur chaque code HTTP du contrat ; chaque test cite la `RGx` qu'il prouve.
 - **Concurrence :** une présence ou un dépôt verrouille la ligne de sa session (`SELECT ... FOR UPDATE`) le temps de sa transaction, ce qui corrige le bug #56 ; les contraintes d'unicité restent le dernier rempart (ENF3).
+- **Documentation de l'API :** Swagger UI généré depuis le code par springdoc-openapi (`/swagger-ui.html`) et Swagger UI du contrat imposé, service `contrat` de `docker compose` (#75). Le contrat reste la source qui fait foi (B2).
 - **Démarrage :** `docker compose up --build` construit le backend et le front dans des conteneurs ; rien d'autre à installer que Docker.
 - **Intégration continue :** GitHub Actions lance `./mvnw verify`, `npm run lint` et `npm run build` à chaque pull request ; ces vérifications sont obligatoires pour fusionner dans `develop` et `main`.
 - **Git :** une branche par issue créée depuis `develop`, une pull request par branche, fusion sans squash pour garder les commits atomiques ; le dernier commit de la branche ferme l'issue avec `Closes #n`. `main` et `develop` sont protégées : aucune écriture directe. `develop` est publiée dans `main` à chaque jalon.
@@ -229,6 +230,7 @@ Le **système** intervient comme acteur secondaire : il génère le code, tire l
 | Version | Quand | Ce qui a changé et pourquoi |
 |---|---|---|
 | 1 | 25/09/2026, étape 1 | Version initiale |
+| 2.2 | 25/09/2026, après la v1.0 | Section 8 : documentation Swagger de l'API, générée et contrat (#75) |
 | 2.1 | 25/09/2026, étape 3 | Une seule base : PostgreSQL. H2 retiré, les tests tournent sur PostgreSQL 16 par Testcontainers (#63) : section 8, B6, ENF6 |
 | 2 | 25/09/2026, étape 3 | **Conséquence du changement de besoin de l'enveloppe** : deux relecteurs par exercice. RG13 remplace Q6 ; RG14, RG15, RG16, RG18, RG19, RG20, RG23 adaptées ; RG25 (note retenue, provisoire) et RG26 (exercices déjà relus) ajoutées ; EF5, EF6, EF7 réécrites, EF12 promue Must ; section 7 : contradiction Q6 / enveloppe, décision « id partagé » remplacée, trois zones d'ombre et le bug #56 ; section 8 : verrou de session ; sections 3 et 10 : six stories sorties du périmètre de la v1.0 et pourquoi |
 | 1.1 | 25/09/2026, étape 2 | Précisions de l'examinateur : l'épreuve Git est supprimée, l'épreuve compte cinq étapes (section 10, second dépôt retiré de la section 9) ; l'enveloppe se demande au surveillant ; « issue » remplace « ticket ». Choix technique précisé : PostgreSQL est la seule base de l'application, H2 ne sert qu'aux tests (section 8) |

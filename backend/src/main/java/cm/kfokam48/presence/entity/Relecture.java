@@ -5,28 +5,28 @@ import java.time.Instant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 /**
- * Relecture d'un exercice par un pair. Relation 1-1 avec l'exercice (Q6, RG13) : elle reprend son
- * identifiant, si bien que l'id renvoyé par POST /api/exercices sert aussi pour POST /api/relectures/{id}.
+ * Relecture d'un exercice par un pair. Depuis l'étape 3, un exercice en a deux (RG13) : la relecture a
+ * son propre identifiant (migration V2) et un même pair ne relit pas deux fois le même exercice.
+ * Le statut de l'exercice se déduit de l'ensemble de ses relectures (RegleStatutExercice).
  */
 @Entity
 @Table(name = "relecture")
 public class Relecture {
 
 	@Id
-	@Column(name = "exercice_id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@MapsId
-	@OneToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "exercice_id")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "exercice_id", nullable = false)
 	private Exercice exercice;
 
 	/** Le relecteur est un étudiant présent à la session, jamais l'auteur (RG2, RG14). */
@@ -66,15 +66,14 @@ public class Relecture {
 		return rendueAt != null;
 	}
 
-	/** Le relecteur commence : l'exercice passe EN_COURS_DE_RELECTURE et son lien n'est plus remplaçable (RG23). */
+	/** Le relecteur commence : le lien de l'exercice n'est plus remplaçable (RG23). */
 	public void commencer(Instant maintenant) {
 		if (commenceeAt == null) {
 			commenceeAt = maintenant;
-			exercice.changerStatut(StatutExercice.EN_COURS_DE_RELECTURE);
 		}
 	}
 
-	/** Rend la note et le commentaire, une seule fois (RG18) : l'exercice passe RELU. */
+	/** Rend la note et le commentaire, une seule fois (RG18). */
 	public void rendre(int note, String commentaire, Instant maintenant) {
 		if (estRendue()) {
 			throw new IllegalStateException("Relecture déjà rendue");
@@ -85,7 +84,6 @@ public class Relecture {
 		if (commenceeAt == null) {
 			commenceeAt = maintenant;
 		}
-		exercice.changerStatut(StatutExercice.RELU);
 	}
 
 	public Long getId() {

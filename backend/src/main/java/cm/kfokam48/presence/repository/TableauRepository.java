@@ -21,8 +21,8 @@ public interface TableauRepository extends Repository<Etudiant, Long> {
 	@Query("SELECT e.etudiant.id, COUNT(e) FROM Exercice e WHERE e.etudiant.promotion.id = :promotionId GROUP BY e.etudiant.id")
 	List<Object[]> exercicesDeposes(@Param("promotionId") Long promotionId);
 
-	/** Notes reçues par chaque auteur sur ses exercices relus (RG19). */
-	@Query("SELECT r.exercice.etudiant.id, r.note FROM Relecture r WHERE r.rendueAt IS NOT NULL AND r.exercice.etudiant.promotion.id = :promotionId")
+	/** Notes rendues, par exercice : [exercice_id, auteur_id, relecteurs_requis, note] (RG19, RG25). */
+	@Query("SELECT r.exercice.id, r.exercice.etudiant.id, r.exercice.relecteursRequis, r.note FROM Relecture r WHERE r.rendueAt IS NOT NULL AND r.exercice.etudiant.promotion.id = :promotionId")
 	List<Object[]> notesRecues(@Param("promotionId") Long promotionId);
 
 	/** RG22 : relectures assignées à l'étudiant et non rendues (Q11). */

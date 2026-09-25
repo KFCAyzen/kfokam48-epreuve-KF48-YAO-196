@@ -74,7 +74,26 @@ Chaque entrée répond aux trois mêmes questions :
 **Fait :** v1.0 publiée sur `main` (PR #71), avec les trois jalons dans l'ordre : `[JALON] analyse`, `[JALON] v0.1`, `[JALON] v1.0`. Cette entrée est publiée avant de relever le hash déclaré sur la plateforme. Dépôt public vérifié sans être connecté. `SOUMISSION.md` rempli à partir du modèle ; la partie « Épreuve Git » est sans objet, l'examinateur ayant supprimé cette épreuve à midi. Délai prolongé d'une heure par l'examinateur ; je l'ai mis à profit pour ajouter une documentation Swagger de l'API (#75) : générée par le backend (springdoc, vérifiée par un test sur les cinq opérations imposées) et Swagger UI du contrat dans `docker compose` (vérifié en le lançant). Le hash déclaré a été relevé après cette dernière publication.
 
 **Ce que je referais autrement avec une journée de plus :**
-- livrer les six stories sorties du périmètre, d'abord l'ajout manuel d'une présence (Q14) et la clôture de session ;
-- travailler dans un seul dossier par session et libérer de l'espace disque avant de commencer : une session parallèle et le disque plein m'ont coûté plus d'une heure ;
-- ajouter des tests de bout en bout du navigateur (Playwright) sur les trois écrans ;
-- nommer explicitement les paramètres des contrôleurs (`@PathVariable("id")`), pour ne plus dépendre de l'option `-parameters` du compilateur.
+
+1. **Des opérations CRUD complètes.** Aujourd'hui, les promotions et les étudiants viennent des données de démonstration, et une session ou un exercice ne se modifie ni ne se supprime. Je donnerais au formateur de quoi créer, lire, modifier et supprimer :
+   - ses promotions et leurs étudiants, y compris l'import d'une liste ;
+   - ses sessions : corriger le titre, clôturer (EF10) ;
+   - les exercices : remplacer le lien (EF11).
+
+   Chaque opération aurait ses règles de gestion : pas de suppression d'une session qui a déjà des présences ou des exercices, pas de suppression d'un étudiant qui a des relectures. Ses codes d'erreur seraient ajoutés au contrat, et ses tests d'intégration écrits comme pour les cinq opérations imposées.
+2. **Une meilleure organisation et implémentation des interfaces.**
+   - Une bibliothèque de composants communs (formulaires, tableaux, cartes, messages d'état), alignée sur la maquette, au lieu de styles repris écran par écran.
+   - Une navigation plus claire entre les rôles, et un écran formateur complet : détail d'une session (EF13) et grille de présence (EF14).
+   - Des états de chargement, d'erreur et « vide » identiques partout, et une accessibilité vérifiée (clavier, contrastes).
+   - Des tests de bout en bout dans un vrai navigateur (Playwright) sur les parcours des trois rôles.
+3. **Une meilleure sécurité.** L'identité est aujourd'hui déclarative (Q1) : n'importe qui peut choisir le nom d'un autre ou envoyer un autre `X-Etudiant-Id`. J'ajouterais :
+   - une vraie authentification avec Spring Security (comptes, mots de passe hachés, ou connexion par lien envoyé par e-mail) et des jetons de session ;
+   - des rôles formateur et étudiant contrôlés par l'API, et non par l'écran ;
+   - le blocage après 5 codes faux (RG7) et une limitation du débit des requêtes ;
+   - une politique CORS et des en-têtes de sécurité HTTP ;
+   - les identifiants de la base hors du dépôt (variables d'environnement) ;
+   - une journalisation des actions sensibles (ajout de présence, relecture rendue).
+
+Aussi :
+- **Méthode de travail :** travailler dans un seul dossier par session et libérer de l'espace disque avant de commencer ; une session parallèle et le disque plein m'ont coûté plus d'une heure.
+- **Robustesse :** nommer explicitement les paramètres des contrôleurs (`@PathVariable("id")`), pour ne plus dépendre de l'option `-parameters` du compilateur.

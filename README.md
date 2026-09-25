@@ -47,14 +47,14 @@ Après 15 minutes le code de S6 a expiré (`410 CODE_EXPIRE`) : ouvrez une nouve
 
 ## Tests
 
-Les tests tournent sur un poste vierge, **sans base de données locale** : ils utilisent H2 en mémoire, en mode PostgreSQL, avec les mêmes migrations Flyway.
+Les tests tournent sur un poste vierge, **sans base de données installée** : ils démarrent eux-mêmes un PostgreSQL 16 jetable dans un conteneur (Testcontainers), la même base que l'application, avec les mêmes migrations Flyway. Il faut Docker et un JDK 21.
 
 ```bash
 cd backend
 ./mvnw verify
 ```
 
-Il faut un JDK 21. Sous Windows, remplacer `./mvnw` par `mvnw.cmd`.
+Sous Windows, remplacer `./mvnw` par `mvnw.cmd`.
 
 ## Organisation du dépôt
 

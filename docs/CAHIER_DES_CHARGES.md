@@ -1,7 +1,7 @@
 # Cahier des charges — Présence & relecture entre pairs KFOKAM48
 
 **Auteur :** KEPSEU Franck Celestin · KF48-YAO-196
-**Version :** 1 · **Date :** 25/09/2026
+**Version :** 1.1 · **Date :** 25/09/2026
 **Frontend choisi :** React, parce que trois écrans de formulaires et de tableaux n'ont besoin ni de rendu serveur (Next.js) ni d'un framework complet (Angular) : React avec Vite donne le code le plus court et un build statique simple à servir dans `docker compose`.
 
 ---
@@ -170,12 +170,12 @@ Le **système** intervient comme acteur secondaire : il génère le code, tire l
 | F3 | Appels API dans une couche dédiée, états de chargement et d'erreur gérés, aucune règle métier dupliquée | Dossier `src/api/`, seul à appeler `fetch` ; moyenne, statuts et contrôles lus depuis l'API |
 
 **Que je m'impose :**
-- **Base de données :** PostgreSQL 16 dans `docker compose` ; H2 en mémoire, en mode PostgreSQL, pour les tests et pour un lancement sans Docker.
+- **Base de données :** PostgreSQL 16, seule base de l'application, lancée par `docker compose`. H2 en mémoire, en mode PostgreSQL, sert uniquement aux tests, pour qu'ils tournent sur un poste vierge sans base locale (B6).
 - **Gestion des migrations :** Flyway, un fichier `V<n>__<description>.sql` par changement de schéma, jamais de modification d'une migration déjà poussée ; SQL compatible PostgreSQL et H2.
 - **Stratégie de tests :** tests unitaires JUnit sur les règles de gestion pures (heure injectée par une `Clock`, hasard par un `Random` à graine fixe) ; tests d'intégration `@SpringBootTest` + MockMvc sur chaque code HTTP du contrat ; chaque test cite la `RGx` qu'il prouve.
 - **Démarrage :** `docker compose up --build` construit le backend et le front dans des conteneurs ; rien d'autre à installer que Docker.
-- **Intégration continue :** GitHub Actions lance `./mvnw verify` et `npm run build` à chaque pull request, pour que `main` reste sain.
-- **Git :** une branche par ticket, une pull request par branche, fusion sans squash pour garder les commits atomiques, issues fermées par `Closes #n`.
+- **Intégration continue :** GitHub Actions lance `./mvnw verify`, `npm run lint` et `npm run build` à chaque pull request ; ces vérifications sont obligatoires pour fusionner dans `develop` et `main`.
+- **Git :** une branche par issue créée depuis `develop`, une pull request par branche, fusion sans squash pour garder les commits atomiques ; le dernier commit de la branche ferme l'issue avec `Closes #n`. `main` et `develop` sont protégées : aucune écriture directe. `develop` est publiée dans `main` à chaque jalon.
 
 ## 9. Livrables
 
@@ -188,32 +188,30 @@ Le **système** intervient comme acteur secondaire : il génère le code, tire l
   - `frontend/` : application React, trois écrans ;
   - `docker-compose.yml`, `README.md` d'installation testé depuis un clone vierge, `CHANGELOG.md` ;
   - backlog en issues priorisées, pull requests liées aux issues, trois commits `[JALON]`.
-- Dépôt public `kfokam48-gitlab-KF48-YAO-196` : l'épreuve Git de l'étape 5.
 - `SOUMISSION.md`, téléversé sur la plateforme avant 18h00.
 
 ## 10. Démarche prévue
 
 | Étape | Créneau visé | Ce que je vise | Fin de l'étape |
 |---|---|---|---|
-| 1. Analyser, spécifier, concevoir | 10h15 – 11h45 | Ce cahier des charges, les diagrammes D1 à D4, le backlog en issues, le contrat complété et figé | Entrée de journal, puis `[JALON] analyse` poussé |
-| 2. Construire la première version | 11h45 – 14h15 | Les stories **Must** uniquement (EF1 à EF7), une branche et une PR par ticket | Entrée de journal, puis `[JALON] v0.1` poussé |
-| 3. Ouvrir l'enveloppe | 14h15 – 15h45 | Issues ouvertes avant de coder, bug reproduit par un test, migration versionnée, contrat mis à jour, re-priorisation écrite, correctif et évolution sur deux branches séparées, cahier et diagrammes mis à jour dans un commit qui le dit | Entrée de journal |
-| 4. Livrer la version finale | 15h45 – 16h45 | Les Should restants, `CHANGELOG.md`, README testé depuis un clone vierge, backlog restant trié | Entrée de journal, puis `[JALON] v1.0` poussé |
-| 5. Épreuve Git | 16h45 – 17h15 | Les cinq situations du `README` de `git-lab.bundle`, dans le second dépôt | Entrée de journal |
-| 6. Soumettre | 17h15 – 17h30 | Hash complets relevés, liens vérifiés en navigation privée, `SOUMISSION.md` téléversé | 30 min de marge avant 18h00 |
+| 1. Analyser, spécifier, concevoir | 10h15 – 11h30 | Ce cahier des charges, les diagrammes D1 à D4, le backlog en issues, le contrat complété et figé | Entrée de journal, puis `[JALON] analyse` poussé |
+| 2. Construire la première version | 11h30 – 14h30 | Les stories **Must** uniquement (EF1 à EF7), une branche et une PR par issue | Entrée de journal, puis `[JALON] v0.1` poussé |
+| 3. Ouvrir l'enveloppe | 14h30 – 16h00 | Enveloppe demandée au surveillant une fois `[JALON] v0.1` poussé. Issues ouvertes avant de coder, bug reproduit par un test, migration versionnée, contrat mis à jour, re-priorisation écrite, correctif et évolution sur deux branches séparées, cahier et diagrammes mis à jour dans un commit qui le dit | Entrée de journal |
+| 4. Livrer la version finale | 16h00 – 17h00 | Les Should restants, `CHANGELOG.md`, README testé depuis un clone vierge, backlog restant trié | Entrée de journal, puis `[JALON] v1.0` poussé |
+| 5. Soumettre | 17h00 – 17h30 | Hash complet relevé, liens vérifiés en navigation privée, `SOUMISSION.md` téléversé | 30 min de marge avant 18h00 |
 
-**Si je prends du retard :** je coupe d'abord le Could (EF14), puis les Should dans l'ordre EF13, EF12, EF11. Je ne coupe jamais les tests B6, le journal, le README, ni la mise à jour de l'analyse après l'étape 3. Tout ticket coupé reste ouvert dans le backlog avec sa priorité.
+**Si je prends du retard :** je coupe d'abord le Could (EF14), puis les Should dans l'ordre EF13, EF12, EF11. Je ne coupe jamais les tests B6, le journal, le README, ni la mise à jour de l'analyse après l'étape 3. Toute issue coupée reste ouverte dans le backlog avec sa priorité.
 
-**Flux Git par ticket :** issue → branche `feat/<n>-<sujet>` (ou `fix/<n>-<sujet>`) → commits atomiques `type(portée): message` citant les `RGx` concernées → pull request « Closes #n » → CI verte → fusion dans `main`.
+**Flux Git par issue :** issue → branche `feat/<n>-<sujet>` (ou `fix/<n>-<sujet>`) créée depuis `develop` → commits atomiques `type(portée): message` citant les `RGx` concernées, le dernier avec `Closes #n` → pull request vers `develop` → CI verte → fusion. À chaque jalon, pull request de publication `develop` vers `main`.
 
-**Definition of Done — un ticket est terminé quand :**
+**Definition of Done — une issue est terminée quand :**
 - chaque critère d'acceptation de l'issue est vérifié, par un test ou à la main ;
 - les règles de gestion citées par l'issue sont couvertes par au moins un test ;
 - les opérations touchées respectent `api/contrat.yaml` : chemins, verbes, codes de statut et format d'erreur ;
 - `./mvnw verify` et `npm run build` passent (CI verte) ;
 - aucun fichier généré et aucun secret n'est commité ;
-- la pull request est liée à l'issue et fusionnée dans `main`, et l'issue est fermée ;
-- le cahier des charges et les diagrammes sont à jour si le ticket en change le contenu.
+- la pull request est liée à l'issue et fusionnée dans `develop`, et l'issue est fermée par un commit `Closes #n` ;
+- le cahier des charges et les diagrammes sont à jour si l'issue en change le contenu.
 
 ---
 
@@ -222,3 +220,4 @@ Le **système** intervient comme acteur secondaire : il génère le code, tire l
 | Version | Quand | Ce qui a changé et pourquoi |
 |---|---|---|
 | 1 | 25/09/2026, étape 1 | Version initiale |
+| 1.1 | 25/09/2026, étape 2 | Précisions de l'examinateur : l'épreuve Git est supprimée, l'épreuve compte cinq étapes (section 10, second dépôt retiré de la section 9) ; l'enveloppe se demande au surveillant ; « issue » remplace « ticket ». Choix technique précisé : PostgreSQL est la seule base de l'application, H2 ne sert qu'aux tests (section 8) |

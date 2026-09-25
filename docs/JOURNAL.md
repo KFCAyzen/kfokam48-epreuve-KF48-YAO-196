@@ -27,11 +27,15 @@ Chaque entrée répond aux trois mêmes questions :
 
 ## Étape 2 — Première version
 
-**Fait :**
+**Fait :** v0.1 livrée par une branche et une pull request par issue, chaque issue fermée par le dernier commit de sa branche (`Closes #n`). Les sept stories Must (EF1 à EF7 : #3 à #9), le socle (#1 démarrage par `docker compose` avec données de démonstration, #2 format d'erreur, #17 CI obligatoire sur `develop` et `main`, #46 tests du front) et #23 (analyse mise à jour après les précisions de l'examinateur). 82 tests backend (unitaires sur RG1, RG2, RG3, RG5, RG11, RG14, RG15, RG19 ; intégration sur chaque code des cinq opérations imposées) et 28 tests front. Écrans conformes aux spécifications `docs/maquettes/` et au design handoff. Vérifié de bout en bout sur PostgreSQL avec `docker compose` : codes 201, 400, 403, 404, 409 et 410 conformes au contrat, tableau en 87 ms.
 
-**Bloqué :**
+**Bloqué :** 30 min d'environnement : disque saturé par les images Docker, Docker Desktop arrêté, et port 8080 déjà pris par un autre projet ; j'ai rendu les ports réglables (`API_PORT`, `FRONT_PORT`). 15 min sur Figma : le quota MCP du plan Starter était atteint, donc les écarts des maquettes ont été tranchés dans le code, à partir des spécifications versionnées dans `docs/maquettes/`. 10 min sur deux commits du front qui ne compilaient pas seuls ; je les ai refaits avant de pousser. Le test de push de LISEZ-MOI (`chore: verification du depot`, anciennement `[JALON] depart`) n'a pas été fait sous cette forme : mon premier push, le `.gitignore`, a servi de vérification.
 
-**IA :**
+**IA :** Claude (Claude Code) a écrit le code backend et frontend et ses tests, issue par issue. Vérifié ainsi :
+- **règles et codes :** chaque règle de gestion est prouvée par un test qui la nomme, et chaque code du contrat par un test d'intégration ;
+- **défaut trouvé :** un test a révélé que Jackson tronquait une note 12.5 en 12 ; c'est corrigé en refusant les décimales ;
+- **front :** composants relus avec la grille react-best-practices ; chaque commit du front compilé isolément ; parcours complet rejoué à la main contre `docker compose` ;
+- **CI :** obligatoire avant chaque fusion.
 
 ---
 
@@ -57,17 +61,7 @@ Chaque entrée répond aux trois mêmes questions :
 
 ---
 
-## Étape 5 — Épreuve Git
-
-**Fait :**
-
-**Bloqué :**
-
-**IA :**
-
----
-
-## Étape 6 — Soumission
+## Étape 5 — Soumission
 
 **Fait :**
 

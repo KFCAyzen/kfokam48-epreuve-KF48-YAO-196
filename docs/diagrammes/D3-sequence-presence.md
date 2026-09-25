@@ -28,6 +28,7 @@ sequenceDiagram
             G-->>F: 429 { code: "TROP_DE_TENTATIVES", message }
         else non bloqué
             S->>DB: chercher la session par code
+            S->>DB: verrouiller la session (SELECT ... FOR UPDATE, correctif #56)
             alt aucune session de sa promotion avec ce code (RG6)
                 S->>DB: echecs_consecutifs + 1, blocage 2 min au 5e (RG7)
                 S-->>G: CodeInconnuException
@@ -44,7 +45,7 @@ sequenceDiagram
             else cas nominal
                 S->>DB: INSERT presence, source = ETUDIANT (RG8)
                 S->>DB: remise à zéro de echecs_consecutifs (RG7)
-                S->>S: assigner un relecteur aux exercices DEPOSE de la session (RG15)
+                S->>S: compléter les relecteurs manquants des exercices de la session (RG15)
                 S-->>API: PresenceDto
                 API-->>F: 201 { id, sessionId, etudiantId, source: "ETUDIANT" }
             end
@@ -65,5 +66,9 @@ sequenceDiagram
 | Code expiré | `410` | `CODE_EXPIRE` | oui, imposé | RG1 |
 | Session clôturée | `410` | `SESSION_CLOTUREE` | oui, `410` imposé | RG9 |
 | Déjà présent | `409` | `DEJA_PRESENT` | oui, imposé | RG4 |
+
+**Blocage après 5 codes faux (RG7, `429`)** : sorti du périmètre de la v1.0 à l'étape 3 (#10) ; la branche reste décrite pour la version suivante.
+
+**Correctif #56.** La session est verrouillée avant les vérifications : deux présences simultanées de la même session s'enregistrent l'une après l'autre, et la seconde ne peut plus assigner le même exercice que la première.
 
 Le compteur d'échecs est enregistré dans une transaction séparée : l'exception `CodeInconnuException` n'annule pas l'incrément (RG7).

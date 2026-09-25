@@ -67,3 +67,14 @@ export type RelectureRendue = {
   commentaire: string
   rendueAt: string
 }
+
+/** Élément imposé de GET /api/tableau. */
+export type LigneTableau = {
+  etudiantId: number
+  nom: string
+  presences: number
+  exercicesDeposes: number
+  /** Calculée par l'API ; null sans note reçue (RG19). */
+  moyenne: number | null
+  relecturesEnAttente: number
+}

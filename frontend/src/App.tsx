@@ -6,6 +6,7 @@ import IdentiteProvider from './identite/IdentiteProvider'
 import Accueil from './pages/Accueil'
 import EtudiantPage from './pages/etudiant/EtudiantPage'
 import FormateurPage from './pages/formateur/FormateurPage'
+import TableauPage from './pages/formateur/TableauPage'
 import RelecteurPage from './pages/relecteur/RelecteurPage'
 
 /** Bandeau selon l'écran : « Formateur », ou l'étudiant désigné sur les écrans étudiant et relecteur. */
@@ -42,6 +43,7 @@ export default function App() {
           <Route element={<Gabarit />}>
             <Route index element={<Accueil />} />
             <Route path="formateur" element={<FormateurPage />} />
+            <Route path="formateur/tableau" element={<TableauPage />} />
             <Route path="etudiant" element={<EtudiantPage />} />
             <Route path="relecteur" element={<RelecteurPage />} />
           </Route>

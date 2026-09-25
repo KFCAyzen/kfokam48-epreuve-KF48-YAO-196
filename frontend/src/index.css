@@ -466,3 +466,26 @@ button.lien {
   font-family: var(--mono);
   font-size: 24px;
 }
+
+/* ---- Onglets de l'écran formateur (spécification 03) ---- */
+.onglets {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--trait);
+  margin: -8px 0 24px;
+}
+
+.onglets a {
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gris);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.onglets a.active {
+  color: var(--encre);
+  border-bottom-color: var(--encre);
+}

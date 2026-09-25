@@ -61,11 +61,11 @@ Chaque entrée répond aux trois mêmes questions :
 
 ## Étape 4 — Version finale
 
-**Fait :**
+**Fait :** CHANGELOG (analyse, v0.1, v1.0, avec les issues et PR de l’historique), README v1.0, backlog trié (seules restent ouvertes les six stories hors périmètre, sans jalon ; #61 fermée avec explication). README suivi depuis un clone vierge de `develop` : `docker compose up --build` construit et démarre les trois services ; la base déjà remplie en V1 a survécu à la migration V2 sur PostgreSQL. Commit `[JALON] v1.0`, publié sur `main`.
 
-**Bloqué :**
+**Bloqué :** 60 min : le disque plein a ralenti la construction des images Docker ; clone refait dans un chemin court (limite de 260 caractères de Windows) ; port 8080 déjà pris, test mené sur les ports de repli du README.
 
-**IA :**
+**IA :** Claude a rédigé le CHANGELOG et le README à partir de la liste réelle des PR fusionnées (`gh pr list`) ; vérifié en recoupant chaque numéro d’issue et de PR avec l’historique, et en suivant le README pas à pas sur un clone vierge.
 
 ---
 

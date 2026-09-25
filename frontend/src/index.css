@@ -418,3 +418,18 @@ button.lien {
   font-weight: 400;
   font-size: 13px;
 }
+
+/* ---- Saisie du code (spécification 06) ---- */
+.formulaire-code {
+  max-width: 480px;
+}
+
+.saisie-code {
+  font-family: var(--mono);
+  font-size: clamp(28px, 9vw, 40px);
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  text-align: center;
+  min-height: 64px;
+  border-bottom: 3px solid var(--encre);
+}

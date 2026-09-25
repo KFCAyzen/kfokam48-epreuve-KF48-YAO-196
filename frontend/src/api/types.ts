@@ -36,3 +36,12 @@ export type Presence = {
   etudiantId: number
   source: 'ETUDIANT' | 'FORMATEUR'
 }
+
+/** Schéma « StatutExercice » : cycle de vie d'un exercice (diagramme D4). */
+export type StatutExercice = 'DEPOSE' | 'EN_ATTENTE_RELECTURE' | 'EN_COURS_DE_RELECTURE' | 'RELU'
+
+/** Réponse imposée de POST /api/exercices. */
+export type ExerciceDepose = {
+  id: number
+  statut: StatutExercice
+}

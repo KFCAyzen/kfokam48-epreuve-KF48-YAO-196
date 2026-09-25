@@ -21,6 +21,10 @@ spring:
           time_zone: UTC
   flyway:
     locations: classpath:db/migration
+  jackson:
+    deserialization:
+      # RG3 : une note 12.5 doit être refusée (400 NOTE_INVALIDE), pas tronquée en 12.
+      accept-float-as-int: false
 
 server:
   error:

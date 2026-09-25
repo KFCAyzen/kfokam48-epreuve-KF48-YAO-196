@@ -1,9 +1,29 @@
-/* Mise en forme minimale : le rendu visuel n'est pas noté. Seul impératif, l'usage sur téléphone (ENF1). */
+/*
+ * Charte reprise de la maquette « Presence KFOKAM48 » (design handoff) : papier, encre, accent bleu ;
+ * titres en Newsreader, texte en Public Sans, codes en IBM Plex Mono.
+ * Le rendu n'est pas noté : seul impératif, l'usage sur téléphone (ENF1).
+ */
 :root {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --papier: oklch(0.985 0.004 85);
+  --fond: oklch(0.93 0.006 85);
+  --panneau: oklch(0.965 0.007 85);
+  --encre: oklch(0.24 0.02 255);
+  --gris: oklch(0.5 0.015 255);
+  --trait: oklch(0.86 0.01 85);
+  --trait-fort: oklch(0.78 0.01 85);
+  --accent: oklch(0.43 0.13 260);
+  --vert: oklch(0.45 0.08 150);
+  --rouge: oklch(0.5 0.16 25);
+  --ambre: oklch(0.55 0.12 70);
+  --serif: 'Newsreader', Georgia, serif;
+  --sans: 'Public Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  font-family: var(--sans);
   line-height: 1.5;
-  color: #1f2328;
-  background: #ffffff;
+  color: var(--encre);
+  background: var(--fond);
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -14,86 +34,322 @@ body {
   margin: 0;
 }
 
-main {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 16px;
+a {
+  color: var(--accent);
+  text-underline-offset: 3px;
 }
 
-.entete {
+/* ---- Bandeau (Masthead) ---- */
+.bandeau {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid #d0d7de;
+  gap: 12px 24px;
+  padding: 16px 24px;
+  background: var(--papier);
+  border-bottom: 1px solid var(--trait);
 }
 
-.entete nav {
+.bandeau-marque {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
+  color: var(--encre);
+  text-decoration: none;
 }
 
-.entete a.active {
-  font-weight: 700;
+.bandeau-marque img {
+  height: 28px;
 }
 
-label {
+.bandeau-marque span {
+  font-family: var(--serif);
+  font-size: 18px;
+}
+
+.bandeau nav {
+  display: flex;
+  gap: 4px;
+}
+
+.bandeau nav a {
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gris);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.bandeau nav a.active {
+  color: var(--encre);
+  border-bottom-color: var(--encre);
+}
+
+.bandeau-qui {
+  text-align: right;
+  font-size: 13px;
+}
+
+.bandeau-qui strong {
   display: block;
-  margin: 12px 0 4px;
+  font-size: 14px;
+}
+
+.bandeau-qui span {
+  color: var(--gris);
+}
+
+/* ---- Page ---- */
+main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+  background: var(--papier);
+  min-height: calc(100vh - 70px);
+}
+
+.surtitre {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gris);
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+h1,
+h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0 0 24px;
+}
+
+h1 {
+  font-size: clamp(28px, 5vw, 40px);
+}
+
+h2 {
+  font-size: 24px;
+  margin-top: 40px;
+}
+
+.grille-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 40px;
+}
+
+@media (max-width: 800px) {
+  .grille-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Formulaires ---- */
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 input,
 select,
-textarea,
-button {
+textarea {
   font: inherit;
+  font-size: 15px;
+  font-weight: 400;
   min-height: 44px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   width: 100%;
-  max-width: 480px;
+  border: 1px solid var(--trait-fort);
+  border-radius: 0;
+  background: #fff;
+  color: var(--encre);
+}
+
+textarea {
+  min-height: 140px;
+  resize: vertical;
 }
 
 button {
-  width: auto;
-  margin-top: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 0;
+  background: var(--accent);
+  color: #fff;
   cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.secondaire {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.notes {
+  border-top: 1px solid var(--trait);
+  padding-top: 14px;
+  margin-top: 20px;
+  font-family: var(--serif);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--gris);
+}
+
+.notes p {
+  margin: 0 0 6px;
+}
+
+/* ---- Panneau du code de présence ---- */
+.panneau {
+  background: var(--panneau);
+  border: 1px solid var(--trait);
+  padding: 28px 32px;
+}
+
+.panneau-entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.code-cases {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.code-cases span {
+  width: clamp(40px, 11vw, 84px);
+  height: clamp(52px, 13vw, 104px);
+  background: #fff;
+  border: 1px solid var(--trait-fort);
+  border-bottom: 3px solid var(--encre);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: clamp(26px, 7vw, 56px);
+  font-weight: 500;
+}
+
+.jauge {
+  height: 3px;
+  background: var(--trait);
+}
+
+.jauge div {
+  height: 3px;
+  background: var(--accent);
+}
+
+.ligne-horaire {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.statut-ouvert {
+  color: var(--vert);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.statut-attente {
+  color: var(--ambre);
+  font-weight: 600;
+}
+
+.statut-ferme {
+  color: var(--gris);
+  font-weight: 600;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+/* ---- Tableaux ---- */
+.tableau-defilant {
+  overflow-x: auto;
+}
+
+.legende {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--gris);
+  margin: 40px 0 10px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 14px;
 }
 
-.tableau-defilant {
-  overflow-x: auto;
-}
-
-th,
-td {
+th {
   text-align: left;
-  padding: 8px;
-  border-bottom: 1px solid #d0d7de;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gris);
+  font-weight: 600;
+  border-bottom: 1px solid var(--encre);
+  padding: 8px 10px;
 }
 
+td {
+  padding: 10px;
+  border-bottom: 1px solid var(--trait);
+}
+
+td.nombre,
+th.nombre {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+tr.a-signaler td {
+  background: oklch(0.97 0.03 80);
+}
+
+/* ---- Messages ---- */
 .erreur {
-  color: #a40e26;
+  color: var(--rouge);
   font-weight: 600;
 }
 
 .code-erreur {
+  font-family: var(--mono);
   font-weight: 400;
   font-size: 0.85em;
 }
 
 .succes {
-  color: #1a7f37;
+  color: var(--vert);
   font-weight: 600;
 }
 
 .chargement {
-  color: #57606a;
+  color: var(--gris);
 }

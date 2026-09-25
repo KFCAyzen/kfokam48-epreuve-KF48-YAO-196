@@ -1,22 +1,19 @@
-import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
+import Bandeau from './components/Bandeau'
 import Accueil from './pages/Accueil'
 import EtudiantPage from './pages/EtudiantPage'
 import FormateurPage from './pages/FormateurPage'
 import RelecteurPage from './pages/RelecteurPage'
 
+function BandeauSelonEcran() {
+  const { pathname } = useLocation()
+  return <Bandeau qui={pathname.startsWith('/formateur') ? 'Formateur' : undefined} />
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <header className="entete">
-        <NavLink to="/" end>
-          KFOKAM48
-        </NavLink>
-        <nav>
-          <NavLink to="/formateur">Formateur</NavLink>
-          <NavLink to="/etudiant">Étudiant</NavLink>
-          <NavLink to="/relecteur">Relecteur</NavLink>
-        </nav>
-      </header>
+      <BandeauSelonEcran />
       <main>
         <Routes>
           <Route path="/" element={<Accueil />} />

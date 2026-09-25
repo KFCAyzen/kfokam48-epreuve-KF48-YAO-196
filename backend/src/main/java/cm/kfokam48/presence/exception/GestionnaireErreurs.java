@@ -56,7 +56,10 @@ public class GestionnaireErreurs {
 		String code = Optional.ofNullable(erreur.getDefaultMessage())
 			.filter(m -> m.matches("[A-Z_]+"))
 			.orElse("REQUETE_INVALIDE");
-		return reponse(HttpStatus.BAD_REQUEST, code, MessagesErreur.pour(code, erreur.getField()));
+		String message = "REQUETE_INVALIDE".equals(code)
+				? "Le champ « %s » n'est pas valide.".formatted(erreur.getField())
+				: MessagesErreur.pour(code, erreur.getField());
+		return reponse(HttpStatus.BAD_REQUEST, code, message);
 	}
 
 	/** JSON illisible, ou valeur du mauvais type : une note 12.5 est une note invalide (RG3). */

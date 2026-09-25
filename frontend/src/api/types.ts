@@ -10,3 +10,21 @@ export type Etudiant = {
   nom: string
   promotionId: number
 }
+
+/** Réponse imposée de POST /api/sessions. */
+export type SessionOuverte = {
+  id: number
+  code: string
+  ouvertureAt: string
+  expirationAt: string
+}
+
+/** Schéma « SessionResume ». */
+export type SessionResume = SessionOuverte & {
+  titre: string
+  promotionId: number
+  clotureeAt: string | null
+  presents: number
+  exercicesDeposes: number
+  exercicesEnAttente: number
+}
